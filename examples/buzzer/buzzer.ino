@@ -1,42 +1,41 @@
-#include "COBRA.h"
+#include "ROBLEX.h"
 
-Cobra Cobra;
+// Ejemplo reproducir melodia con el modulo buzzer
+// melodias disponible en: https://github.com/robsoncouto/arduino-songs
+//el modulo buzzer cuenta con el buzzer en el pin A y un boton en el pinB
 
-#define BUZZZER_PIN  pin5A // ESP32 pin GIOP18 connected to piezo buzzer
+// CONECTAR EL MODULO BUZZER EN EL PUERTO 3
+
+#define BUZZZER_PIN pin3A  // definir el buzzer en el puerto 3A
+#define BOTON_PIN pin3B    // definir el boton en el puerto 3B
+
+
+ROBLEX ROBLEX;
 
 int melody[] = {
-
-  // Fur Elise - Ludwig van Beethovem
-  // Score available at https://musescore.com/user/28149610/scores/5281944
-
-  //starts from 1 ending on 9
-  NOTE_E5, 16, NOTE_DS5, 16, //1
-  NOTE_E5, 16, NOTE_DS5, 16, NOTE_E5, 16, NOTE_B4, 16, NOTE_D5, 16, NOTE_C5, 16,
-  NOTE_A4, -8, NOTE_C4, 16, NOTE_E4, 16, NOTE_A4, 16,
-  NOTE_B4, -8, NOTE_E4, 16, NOTE_GS4, 16, NOTE_B4, 16,
-  NOTE_C5, 8,  REST, 16, NOTE_E4, 16, NOTE_E5, 16,  NOTE_DS5, 16,
-
-  NOTE_E5, 16, NOTE_DS5, 16, NOTE_E5, 16, NOTE_B4, 16, NOTE_D5, 16, NOTE_C5, 16,//6
-  NOTE_A4, -8, NOTE_C4, 16, NOTE_E4, 16, NOTE_A4, 16,
-  NOTE_B4, -8, NOTE_E4, 16, NOTE_C5, 16, NOTE_B4, 16,
-  NOTE_A4 , 4, REST, 8, //9 - 1st ending
-
+  // Super Mario Bros theme
+  // Disponible en https://github.com/robsoncouto/arduino-songs/blob/master/supermariobros/supermariobros.ino
+  // Theme by Koji Kondo
+  NOTE_E5, 8, NOTE_E5, 8, REST, 8, NOTE_E5, 8, REST, 8, NOTE_C5, 8, NOTE_E5, 8,
+  REST, 8, NOTE_G5, 4
 };
 
-int  tempo = 80;
+int tempo = 200;  //velocidad de reproduccion de la melodia tomada de la misma pagina
+
 void setup() {
 
-  Cobra.SetupPort(5, OUTPUT, INPUT);
-  ledcAttachPin(BUZZZER_PIN, 0);
+  Serial.begin(115200);  // iniciar debug serial
+  Serial.println("start");
 
-  Serial.begin(115200);
+  pinMode(BOTON_PIN, INPUT);      //configurar el boton como entrada
+  ledcAttachPin(BUZZZER_PIN, 0);  //configurar el buzzer como salida PWM en el canal 0
 }
 
 
 void loop() {
-  if (digitalRead(pin5B) == LOW) {
-    unsigned int n = sizeof(melody) / sizeof(melody[0]);
-    Cobra.PlayMelody(melody, n, tempo);
+  if (digitalRead(BOTON_PIN) == HIGH) {  //reproducir cuando se presion el boton
+    unsigned int n = sizeof(melody) / sizeof(melody[0]); //calcular el tamano de la melodia
+    ROBLEX.PlayMelody(melody, n, tempo);  //reproducir la melodia (melodia, tamano de la melodia, velocidad)
   }
 
 }

@@ -1,7 +1,6 @@
 #include "ROBLEX.h"
 
 
-
 void  ROBLEX::PlayMelody(int *melody, unsigned int n, int tempo) {
   int notes = n /  2;
 
@@ -9,7 +8,7 @@ void  ROBLEX::PlayMelody(int *melody, unsigned int n, int tempo) {
   int wholenote = (60000 * 4) / tempo;
   int divider = 0, noteDuration = 0;
 
-  for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2) {
+  for (int thisNote = 0; thisNote < notes * 2 ; thisNote = thisNote + 2) {
 
     // calculates the duration of each note
     divider = melody[thisNote + 1];
