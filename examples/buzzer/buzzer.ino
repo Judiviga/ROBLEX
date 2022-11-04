@@ -1,14 +1,14 @@
 #include "ROBLEX.h"
 
-// Ejemplo reproducir melodia con el modulo buzzer
+// Ejemplo reproducir melodia y notas con el modulo buzzer
 // melodias disponible en: https://github.com/robsoncouto/arduino-songs
-//el modulo buzzer cuenta con el buzzer en el pin A y un boton en el pinB
+// el modulo buzzer cuenta con el buzzer en el pinA y un boton en el pinB
 
 // CONECTAR EL MODULO BUZZER EN EL PUERTO 3
 
 #define BUZZZER_PIN pin3A  // definir el buzzer en el puerto 3A
 #define BOTON_PIN pin3B    // definir el boton en el puerto 3B
-
+#define BUZZER_CHANNEL 0   // definir canal de salida del pwm
 
 ROBLEX ROBLEX;
 
@@ -27,15 +27,27 @@ void setup() {
   Serial.begin(115200);  // iniciar debug serial
   Serial.println("start");
 
-  pinMode(BOTON_PIN, INPUT);      //configurar el boton como entrada
-  ledcAttachPin(BUZZZER_PIN, 0);  //configurar el buzzer como salida PWM en el canal 0
+  pinMode(BOTON_PIN, INPUT);                   // configurar el boton como entrada
+  ledcAttachPin(BUZZZER_PIN, BUZZER_CHANNEL);  // configurar el buzzer como salida PWM en el canal 0
 }
 
 
 void loop() {
-  if (digitalRead(BOTON_PIN) == HIGH) {  //reproducir cuando se presion el boton
-    unsigned int n = sizeof(melody) / sizeof(melody[0]); //calcular el tamano de la melodia
-    ROBLEX.PlayMelody(melody, n, tempo);  //reproducir la melodia (melodia, tamano de la melodia, velocidad)
+  // reproducir melodias
+  if (digitalRead(BOTON_PIN) == HIGH) {          // reproducir cuando se presiona el boton del modulo
+    int n = sizeof(melody) / sizeof(melody[0]);  // calcular el tamano de la melodia
+    ROBLEX.PlayMelody(melody, n, tempo);         // reproducir la melodia (melodia, tamano de la melodia, velocidad)
   }
 
+  // reproducir notas sueltas
+  if (analogRead(boton)) {                   // reproducir cuando se presiona el boton de la shield
+    ledcWriteTone(BUZZER_CHANNEL, NOTE_E5);  // reproducir nota E5
+    delay(200);
+    ledcWriteTone(BUZZER_CHANNEL, NOTE_G5);  // reproducir nota G5
+    delay(200);
+    ledcWriteTone(BUZZER_CHANNEL, 0);  // silencio
+    delay(200);
+  } else {
+    ledcWriteTone(BUZZER_CHANNEL, 0);  // silenciar cuando se suelta el boton
+  }
 }

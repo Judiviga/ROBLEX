@@ -1,5 +1,4 @@
 #include "ROBLEX.h"
-#include "Adafruit_VL53L0X.h"
 
 // address we will assign for each sensor
 #define front_adress 0x30

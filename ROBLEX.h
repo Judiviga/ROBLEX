@@ -17,22 +17,21 @@
 #define pin3B         26
 
 #define pin4A         13
-#define pin4B         12
+#define pin4B         12//
 
-#define pin5A         15
+#define pin5A         15//
 #define pin5B         4
 
-#define RgbPin       18
-#define rGbPin       19
-#define rgBPin       5
+#define pinRojo       18
+#define pinVerde      19
+#define pinAzul       5
 
-#define boton        36
+#define boton         36//
 
-#define leftChA      0
-#define leftChB      1
-#define rightChA     2
-#define rightChB     3
-
+#define leftChA       0
+#define leftChB       1
+#define rightChA      2
+#define rightChB      3
 
 
 #include "BluetoothSerial.h"
@@ -40,6 +39,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include "driver/mcpwm.h"
+#include "Adafruit_VL53L0X.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -53,12 +53,10 @@ class ROBLEX {
     //method
     int * GetPins(uint8_t port);
     void BtBegin(String robotName = "ROBLEX ROBOT");
-    void RGBled(int R = 0, int G = 0, int B = 0);
+    void Rgb(int R = 0, int G = 0, int B = 0);
     void ReadApp();
     String AppValue[20];
     void SetupDistance(uint8_t port , bool avtiveL = false, bool activeF = true, bool activeR = false);
-    // void SetupOled();
-    //  void Drive(int pwm = 0, int channel = 0);
     void Drive(int pwm = 0, int chA = 0, int chB = 0);
     void SetupPort(uint8_t port, uint8_t mode1 , uint8_t mode2);
     uint16_t LeftRange(void);

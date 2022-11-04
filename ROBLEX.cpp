@@ -2,9 +2,9 @@
 
 ROBLEX::ROBLEX() {
   // Anything you need when instantiating your object goes here
-  pinMode(RgbPin, OUTPUT);
-  pinMode(rGbPin, OUTPUT);
-  pinMode(rgBPin, OUTPUT);
+  pinMode(pinRojo, OUTPUT);
+  pinMode(pinVerde, OUTPUT);
+  pinMode(pinAzul, OUTPUT);
   Wire.begin();
   ledcSetup(0, 2000, 8);
   ledcSetup(1, 30000, 8);
@@ -13,10 +13,10 @@ ROBLEX::ROBLEX() {
   ledcSetup(4, 30000, 8);
 }
 
-void ROBLEX::RGBled(int R , int G , int B) {
-  analogWrite(RgbPin, R);
-  analogWrite(rGbPin, G);
-  analogWrite(rgBPin, B);
+void ROBLEX::Rgb(int R , int G , int B) {
+  analogWrite(pinRojo, R);
+  analogWrite(pinVerde, G);
+  analogWrite(pinAzul, B);
 }
 
 void ROBLEX::Drive(int pwm, int chA , int chB) {
@@ -147,22 +147,3 @@ unsigned char ROBLEX::LogoRoblex [] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0xc0, 0x00, 0x00, 
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x80, 0x00, 0x00
 };
-
-
-
-//////////encoder
-/*
-  long encoder = 0;
-
-  void IRAM_ATTR ISR() {
-  if (digitalRead(pin1B) == digitalRead(pin1A) ) {
-    encoder = encoder - 1;
-  }
-  else {
-    encoder = encoder + 1;
-  }
-  Serial.println(encoder);
-  }
-
-    attachInterrupt(pin1A, ISR, FALLING);//setup
-*/

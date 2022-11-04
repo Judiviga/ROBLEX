@@ -13,9 +13,8 @@
 
 // CONECTAR EL MODULO DE SENSOR ANALOGO EN EL PUERTO 2 Y LA PANTALLA EN CUALQUIER OTRO
 
-#define SENSOR_PIN pin2A  // definir el sensor en el puerto 2A
-#define LED_PIN pin2B     // definir el led en el puerto 2B
-
+#define SENSOR_PIN pin1A  // definir el sensor en el puerto 3A
+#define LED_PIN pin1B     // definir el led en el puerto 3B
 
 ROBLEX ROBLEX;
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
@@ -29,7 +28,7 @@ void setup() {
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // iniciar la pantalla oled
 
-  ROBLEX.SetupPort(2, INPUT, OUTPUT);  // Inicia el modulo en el puerto 1
+  ROBLEX.SetupPort(1, INPUT, OUTPUT);  // Inicia el modulo en el puerto 1
 
   analogReadResolution(10);
   for (int i = 127; i >= 0; i--) {
@@ -37,17 +36,59 @@ void setup() {
   }
 }
 
-void loop() {
-  
-  int sensor = analogRead(SENSOR_PIN);  // lee el valor del sensor analogico
+// define valores numericos a los valores para facilitar la interpretacion
+#define ARRIBA 4
+#define DERECHA 3
+#define ABAJO 2
+#define IZQUIERDA 1
+#define NINGUNO 0
 
-  if (sensor < 300) {  // encender el led cuando el valor analogo es inferior a 300
-    digitalWrite(LED_PIN, 255);
+//crea una funcion que identifica el boton presionado segun su valor
+int botones(int valor) {
+
+  if (valor > 1010) {
+    return ARRIBA;
+  } else if (valor > 700) {
+    return DERECHA;
+  } else if (valor > 300) {
+    return ABAJO;
+  } else if (valor > 180) {
+    return IZQUIERDA;
   } else {
-    digitalWrite(LED_PIN, 0);  // apagar el led cuando se supere este valor
+    return NINGUNO;
+  }
+}
+
+void loop() {
+
+  int valor = analogRead(SENSOR_PIN);  // lee el valor del sensor analogico
+
+  // obtiene el boton presionado haciendo uso de la funcion creada anteriormente
+  int presionado = botones(valor);
+
+  // realizar funciones segun el boton presionado
+  if (presionado == ARRIBA) {  // encender el led del modulo de botones si se presiona el boton de arriba
+    digitalWrite(LED_PIN, 255);
+    Serial.print("ARRIBA");
+  } else {
+    digitalWrite(LED_PIN, 0);
   }
 
-  Serial.print(sensor);  // imprime el valor en el debug serial
+  if (presionado == DERECHA) {// cambiar el color del led rgb con los otros botones
+    ROBLEX.Rgb(255, 0, 0);
+    Serial.print("DERECHA");
+  } else if (presionado == ABAJO) {
+    ROBLEX.Rgb(0, 255, 0);
+    Serial.print("ABAJO");
+  } else if (presionado == IZQUIERDA) {
+    ROBLEX.Rgb(0, 0, 255);
+    Serial.print("IZQUIERDA");
+  } else {
+    ROBLEX.Rgb(0, 0, 0);
+    Serial.print("NINGUNO");
+  }
+
+
   Serial.println();
 
   display.clearDisplay();  // limpia la informacion del display
@@ -56,12 +97,12 @@ void loop() {
   // imprime la distancia en numeros en la parte superior de la pantalla
   display.setTextSize(2);    // tamano de la letra
   display.setCursor(50, 0);  // posicion del cursor en la pantalla (x,y)
-  display.print(sensor);
+  display.print(valor);
 
   //escala el valor a un pixel imprimible en pantalla
-  int grafica = map(sensor, 0, 1024, 63, 16); 
+  int grafica = map(valor, 0, 1024, 63, 16);
   // map(valor minimo del sensor, valor maximo del sensor, punto inferior de la pantalla, punto superior de la pantalla)
-  
+
 
   x[127] = grafica;  //asigna el valor escalado a el ultimo dato de la matriz
 
