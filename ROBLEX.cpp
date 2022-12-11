@@ -5,6 +5,7 @@ ROBLEX::ROBLEX() {
   pinMode(pinRojo, OUTPUT);
   pinMode(pinVerde, OUTPUT);
   pinMode(pinAzul, OUTPUT);
+  pinMode(boton, INPUT);
   Wire.begin();
   ledcSetup(0, 2000, 8);
   ledcSetup(1, 30000, 8);

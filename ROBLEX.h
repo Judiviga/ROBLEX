@@ -7,26 +7,27 @@
 #include "WProgram.h"
 #endif
 
-#define pin1A         14
+#define pin1A         32//14
 #define pin1B         27
 
-#define pin2A         32
-#define pin2B         33
+#define pin2A         25//32
+#define pin2B         26//33
 
-#define pin3A         25
-#define pin3B         26
+#define pin3A         33//25
+#define pin3B         18//26
 
 #define pin4A         13
 #define pin4B         12//
 
-#define pin5A         15//
+#define pin5A         19//15
 #define pin5B         4
 
-#define pinRojo       18
-#define pinVerde      19
-#define pinAzul       5
+#define pinRojo       5//18
+#define pinVerde      14//19
+#define pinAzul       15//5
 
 #define boton         36//
+#define vin           35
 
 #define leftChA       0
 #define leftChB       1
