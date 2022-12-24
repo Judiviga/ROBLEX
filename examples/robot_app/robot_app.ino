@@ -1,4 +1,7 @@
 #include "ROBLEX.h"
+#include "BluetoothSerial.h"
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 // Ejemplo controlar robot con la aplicacion de celular
 
@@ -6,7 +9,9 @@
 
 ROBLEX ROBLEX;
 
-String RobotName = "ROBLEX Robot SENA";  // nombre del robot en el buletooth
+BluetoothSerial SerialBT;
+
+String RobotName = "ROBLEX Robot";  // nombre del robot en el buletooth
 
 #define LEFT_PWM MCPWM_UNIT_0
 #define RIGHT_PWM MCPWM_UNIT_1
@@ -32,7 +37,7 @@ void setup() {
   display.print(RobotName);
   display.display();
 
-  ROBLEX.BtBegin(RobotName);  //iniciar la comunicacion bluetooth con el nombre asignado
+  SerialBT.begin(RobotName);  //iniciar la comunicacion bluetooth con el nombre asignado
 }
 
 //crear funcion para mover los motores
@@ -52,19 +57,25 @@ void Drive(mcpwm_unit_t unit, int out) {
 
 void loop() {
 
-  ROBLEX.ReadApp();  //leer la aplicacion y asigna las siguientes variables
-  /*
+  if (SerialBT.available()) {
+    String cmd = SerialBT.readStringUntil('\n');
+    ROBLEX.ReadApp(cmd);  //leer la aplicacion y asigna las siguientes variables
+    /*
     ROBLEX.AppValue[0]  = valor del motor derecho
     ROBLEX.AppValue[1]  = valor del motor izquierdo
     ROBLEX.AppValue[2]  = valor del led rojo    
     ROBLEX.AppValue[3]  = valor del led verde
-    ROBLEX.AppValue[4]  = valor del motor azul     
+    ROBLEX.AppValue[4]  = valor del led azul     
   */
+    //mueve los motores segun el valor de la app
+    Drive(RIGHT_PWM, ROBLEX.AppValue[0].toInt());
+    Drive(LEFT_PWM, ROBLEX.AppValue[1].toInt());
+    //cambia el color del led RGB segun el valor de la app
+    ROBLEX.Rgb(ROBLEX.AppValue[2].toInt(), ROBLEX.AppValue[3].toInt(), ROBLEX.AppValue[4].toInt());
+  }
 
-  //mueve los motores segun el valor de la app
-  Drive(RIGHT_PWM, ROBLEX.AppValue[0].toInt());
-  Drive(LEFT_PWM, ROBLEX.AppValue[1].toInt());
-
-  //cambia el color del led RGB segun el valor de la app
-  ROBLEX.Rgb(ROBLEX.AppValue[2].toInt(), ROBLEX.AppValue[3].toInt(), ROBLEX.AppValue[4].toInt());
+  if (!SerialBT.connected(200)) {
+    Serial.print("desconectado");
+    ROBLEX.ReadApp("0");
+  }
 }

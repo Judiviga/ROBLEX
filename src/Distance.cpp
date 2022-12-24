@@ -99,3 +99,4 @@ uint8_t ROBLEX::LeftStatus(void) {
 uint8_t ROBLEX::FrontStatus(void) {
    return front.readRangeStatus();
 }
+

@@ -1,4 +1,6 @@
 #include "ROBLEX.h"
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 // Ejemplo leer el modulo de distacia y imprimir grafica con el modulo Pantalla oled y el debug serial
 

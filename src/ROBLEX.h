@@ -7,24 +7,24 @@
 #include "WProgram.h"
 #endif
 
-#define pin1A         32//14
-#define pin1B         27
+#define pin1A         32//32//14
+#define pin1B         14//27
 
-#define pin2A         25//32
-#define pin2B         26//33
+#define pin2A         25//25//32
+#define pin2B         26//26//33
 
-#define pin3A         33//25
-#define pin3B         18//26
+#define pin3A         33//33//25
+#define pin3B         15//18//26
 
 #define pin4A         13
 #define pin4B         12//
 
-#define pin5A         19//15
+#define pin5A         27//19//15
 #define pin5B         4
 
-#define pinRojo       5//18
-#define pinVerde      14//19
-#define pinAzul       15//5
+#define pinRojo       18//5//18
+#define pinVerde      19//14//19
+#define pinAzul       5//15//5
 
 #define boton         36//
 #define vin           35
@@ -35,10 +35,14 @@
 #define rightChB      3
 
 
-#include "BluetoothSerial.h"
+
 #include <Wire.h>
+/*
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "BluetoothSerial.h"
+#include <Adafruit_PCF8574.h> 
+*/
 #include "driver/mcpwm.h"
 #include "Adafruit_VL53L0X.h"
 
@@ -53,13 +57,16 @@ class ROBLEX {
     ROBLEX();
     //method
     int * GetPins(uint8_t port);
-    void BtBegin(String robotName = "ROBLEX ROBOT");
     void Rgb(int R = 0, int G = 0, int B = 0);
-    void ReadApp();
+    void ReadApp(String cmd);
     String AppValue[20];
-    void SetupDistance(uint8_t port , bool avtiveL = false, bool activeF = true, bool activeR = false);
-    void Drive(int pwm = 0, int chA = 0, int chB = 0);
+    
     void SetupPort(uint8_t port, uint8_t mode1 , uint8_t mode2);
+    
+    void Drive(int pwm = 0, int chA = 0, int chB = 0);
+    
+
+    void SetupDistance(uint8_t port , bool avtiveL = false, bool activeF = true, bool activeR = false);
     uint16_t LeftRange(void);
     uint16_t FrontRange(void);
     uint16_t RightRange(void);
@@ -71,8 +78,9 @@ class ROBLEX {
     uint8_t RightStatus(void);
 
     void PlayMelody(int *melody, unsigned int n, int tempo = 200);
-    void SetupMotor(uint8_t port, mcpwm_unit_t pwm_unit, uint32_t frequency);
 
+  //motor
+    void SetupMotor(uint8_t port, mcpwm_unit_t pwm_unit, uint32_t frequency);
     void MotorForward(mcpwm_unit_t unit, int duty_cycle);
     void MotorBackward(mcpwm_unit_t unit, int duty_cycle);
     void MotorStop(mcpwm_unit_t unit);

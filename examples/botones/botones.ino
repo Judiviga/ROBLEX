@@ -1,5 +1,6 @@
 #include "ROBLEX.h"
-
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 // Ejemplo leer un modulo de sensor analogo y graficar en la pantalla oled y el debug serial
 // enciende el led del modulo si el valor analogo es bajo
 // es compatible con los modulos:
