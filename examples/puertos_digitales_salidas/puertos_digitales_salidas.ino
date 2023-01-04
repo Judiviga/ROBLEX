@@ -13,7 +13,7 @@ void setup() {
   Serial.begin(115200); // iniciar debug serial
   Serial.println("start");
 
-  pcf.begin(0x20, &Wire); // iniciar pcf 
+  pcf.begin(0x27, &Wire); // iniciar pcf 
 
   for (int p = 1; p <= 6; p++) {  // configurar los 6 puertos como salidas
     pcf.pinMode(p, OUTPUT);
