@@ -40,14 +40,12 @@ void loop() {
   }
 
   // reproducir notas sueltas
-  if (analogRead(boton)) {                   // reproducir cuando se presiona el boton de la shield
+  if (digitalRead(boton)== 1) {                   // reproducir cuando se presiona el boton de la shield
     ledcWriteTone(BUZZER_CHANNEL, NOTE_E5);  // reproducir nota E5
     delay(200);
     ledcWriteTone(BUZZER_CHANNEL, NOTE_G5);  // reproducir nota G5
     delay(200);
     ledcWriteTone(BUZZER_CHANNEL, 0);  // silencio
     delay(200);
-  } else {
-    ledcWriteTone(BUZZER_CHANNEL, 0);  // silenciar cuando se suelta el boton
-  }
+  } 
 }
