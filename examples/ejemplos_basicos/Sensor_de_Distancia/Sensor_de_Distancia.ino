@@ -1,25 +1,13 @@
 #include "ROBLEX.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-// Ejemplo leer un modulo de sensor analogo y graficar en la pantalla oled y el debug serial
-// enciende el led del modulo si el valor analogo es bajo
-// es compatible con los modulos:
 
-// Sensor de luz
-// Sensor de sonido
-// Potenciometro
-// Botones
+// Ejemplo leer el modulo de distacia y imprimir grafica con el modulo Pantalla oled y el debug serial
 
-// estos modulos tiene el sensor en el pin A y un led en el pinB
-
-// CONECTAR EL MODULO DE SENSOR ANALOGO EN EL PUERTO 2 Y LA PANTALLA EN CUALQUIER OTRO
-
-#define SENSOR_PIN pin2A  // definir el sensor en el puerto 2A
-#define LED_PIN pin2B     // definir el led en el puerto 2B
-
+// CONECTAR EL MODULO DE DISTANCIA EN EL PUERTO 2 Y EL MODULO PANTALLA OLED EN CUALQUIER OTRO PUERTO
 
 ROBLEX ROBLEX;
-Adafruit_SSD1306 display(128, 64, &Wire, -1);
+Adafruit_SSD1306 display(128, 64, &Wire, -1);  // configurar la pantalla oled
 
 int x[128];  //variable para la grafica
 
@@ -30,26 +18,28 @@ void setup() {
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // iniciar la pantalla oled
 
-  ROBLEX.SetupPort(2, INPUT, OUTPUT);  // Inicia el modulo en el puerto 1
+  ROBLEX.SetupDistance(2, false, true, false);  //iniciar el modulo de distancia en el puerto 2 con el sensor frontal
 
-  analogReadResolution(10);
+  /*
+para usar el sensor izquierdo:
+  ROBLEX.SetupDistance(2, true, false, false);
+
+para usar el sensor frontal:
+  ROBLEX.SetupDistance(2, false, true, false);
+
+para usar el sensor derecho:
+  ROBLEX.SetupDistance(2, false, false, true);
+
+puede usar varios sensores simultaneamente cambiando a true respectivamente
+*/
+
   for (int i = 127; i >= 0; i--) {
     x[i] = 10000;  // inicia los valores en un numero grande fuera de la pantalla
   }
 }
 
-void loop() {
-  
-  int sensor = analogRead(SENSOR_PIN);  // lee el valor del sensor analogico
 
-  if (sensor < 300) {  // encender el led cuando el valor analogo es inferior a 300
-    digitalWrite(LED_PIN, 255);
-  } else {
-    digitalWrite(LED_PIN, 0);  // apagar el led cuando se supere este valor
-  }
-
-  Serial.print(sensor);  // imprime el valor en el debug serial
-  Serial.println();
+void graficar(int valor, int min, int max) {
 
   display.clearDisplay();  // limpia la informacion del display
   display.setTextColor(WHITE);
@@ -57,12 +47,11 @@ void loop() {
   // imprime la distancia en numeros en la parte superior de la pantalla
   display.setTextSize(2);    // tamano de la letra
   display.setCursor(50, 0);  // posicion del cursor en la pantalla (x,y)
-  display.print(sensor);
+  display.print(valor);
 
   //escala el valor a un pixel imprimible en pantalla
-  int grafica = map(sensor, 0, 1024, 63, 16); 
+  int grafica = map(valor, min, max, 63, 16);
   // map(valor minimo del sensor, valor maximo del sensor, punto inferior de la pantalla, punto superior de la pantalla)
-  
 
   x[127] = grafica;  //asigna el valor escalado a el ultimo dato de la matriz
 
@@ -74,4 +63,21 @@ void loop() {
   }
   display.display();  // imprime la informacion en la pantalla
   delay(10);
+}
+
+int distancia = 0;
+
+void loop() {
+
+  if (ROBLEX.FrontComplete()) {
+    distancia = ROBLEX.FrontRange();
+  }
+
+  Serial.print(distancia);  // imprime la distancia en el debug serial
+  Serial.println();
+
+  display.clearDisplay();  //limpia la informacion del display
+  display.setTextColor(WHITE);
+
+  graficar(distancia, 0, 800);
 }

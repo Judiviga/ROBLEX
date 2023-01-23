@@ -14,8 +14,9 @@
 
 // CONECTAR EL MODULO DE SENSOR ANALOGO EN EL PUERTO 2 Y LA PANTALLA EN CUALQUIER OTRO
 
-#define SENSOR_PIN pin2A  // definir el sensor en el puerto 2A
-#define LED_PIN pin2B     // definir el led en el puerto 2B
+#define SENSOR_PIN pin1A  // definir el sensor en el puerto 2A
+#define LED_PIN pin1B     // definir el led en el puerto 2B
+
 
 ROBLEX ROBLEX;
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
@@ -29,74 +30,15 @@ void setup() {
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // iniciar la pantalla oled
 
-
   pinMode(SENSOR_PIN, INPUT);  //define el pin A como entrada
   pinMode(LED_PIN, OUTPUT);    //define el pin B como salida
-
-  analogReadResolution(10);
 
   for (int i = 127; i >= 0; i--) {
     x[i] = 10000;  // inicia los valores en un numero grande fuera de la pantalla
   }
 }
 
-// define valores numericos a los valores para facilitar la interpretacion
-#define ARRIBA 4
-#define DERECHA 3
-#define ABAJO 2
-#define IZQUIERDA 1
-#define NINGUNO 0
-
-//crea una funcion que identifica el boton presionado segun su valor
-int botones(int valor) {
-
-  if (valor > 1010) {
-    return ARRIBA;
-  } else if (valor > 700) {
-    return DERECHA;
-  } else if (valor > 300) {
-    return ABAJO;
-  } else if (valor > 180) {
-    return IZQUIERDA;
-  } else {
-    return NINGUNO;
-  }
-}
-
-void loop() {
-
-  int valor = analogRead(SENSOR_PIN);  // lee el valor del sensor analogico
-
-  // obtiene el boton presionado haciendo uso de la funcion creada anteriormente
-  int presionado = botones(valor);
-
-  // realizar funciones segun el boton presionado
-  if (presionado == ARRIBA) {  // encender el led del modulo de botones si se presiona el boton de arriba
-    digitalWrite(LED_PIN, 255);
-    Serial.print("ARRIBA");
-  } else {
-    digitalWrite(LED_PIN, 0);
-  }
-
-  if (presionado == DERECHA) {  // cambiar el color del led rgb con los otros botones
-    ROBLEX.Rgb(255, 0, 0);      //rojo
-    Serial.print("DERECHA");
-  } else if (presionado == ABAJO) {
-    ROBLEX.Rgb(0, 255, 0);  //verde
-    Serial.print("ABAJO");
-  } else if (presionado == IZQUIERDA) {
-    ROBLEX.Rgb(0, 0, 255);  //azul
-    Serial.print("IZQUIERDA");
-  } else {
-    ROBLEX.Rgb(0, 0, 0);
-  }
-  if (presionado == NINGUNO) {
-    Serial.print("NINGUNO");
-  }
-
-  Serial.println();
-
-
+void graficar(int valor, int min, int max) {
 
   display.clearDisplay();  // limpia la informacion del display
   display.setTextColor(WHITE);
@@ -107,9 +49,8 @@ void loop() {
   display.print(valor);
 
   //escala el valor a un pixel imprimible en pantalla
-  int grafica = map(valor, 0, 1024, 63, 16);
+  int grafica = map(valor, min, max, 63, 16);
   // map(valor minimo del sensor, valor maximo del sensor, punto inferior de la pantalla, punto superior de la pantalla)
-
 
   x[127] = grafica;  //asigna el valor escalado a el ultimo dato de la matriz
 
@@ -121,4 +62,22 @@ void loop() {
   }
   display.display();  // imprime la informacion en la pantalla
   delay(10);
+}
+
+
+void loop() {
+
+  int sensor = analogRead(SENSOR_PIN);  // lee el valor del sensor analogico
+
+  if (sensor < 1000) {  // encender el led cuando el valor analogo es inferior a 300
+    digitalWrite(LED_PIN, 255);
+  } else {
+    digitalWrite(LED_PIN, 0);  // apagar el led cuando se supere este valor
+  }
+
+  Serial.print(sensor);  // imprime el valor en el debug serial
+  Serial.println();
+
+  graficar(sensor, 0, 4095); //grafica en la pantalla oled el valor del sensor
+
 }

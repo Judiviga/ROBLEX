@@ -77,7 +77,7 @@ class ROBLEX {
     uint8_t FrontStatus(void);
     uint8_t RightStatus(void);
 
-    void PlayMelody(int *melody, unsigned int n, int tempo = 200);
+    void PlayMelody(int channel, int *melody, unsigned int n, int tempo = 200);
 
   //motor
     void SetupMotor(uint8_t port, mcpwm_unit_t pwm_unit, uint32_t frequency);

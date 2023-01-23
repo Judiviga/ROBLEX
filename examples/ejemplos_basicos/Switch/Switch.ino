@@ -3,17 +3,19 @@
 // Ejemplo leer el modulo switch para cambiar el color del led RGB
 //CONECTAR EL MODULO SWITCH EN EL PUERTO 1
 
+//definimos el SWITCH en el puerto 1
 #define SWITCH_A pin1A
-#define SWITCH_B pin1B  //definimos el SWITCH en el puerto 1
+#define SWITCH_B pin1B  
 
 ROBLEX ROBLEX;
 
 int A;
 int B;  //Declaramos dos variables para almacenar el estado del switch
 
+//Declaramos los switches como entradas
 void setup() {
   pinMode(SWITCH_A, INPUT);
-  pinMode(SWITCH_B, INPUT);  //Declaramos los switches como entradas
+  pinMode(SWITCH_B, INPUT);  
 }
 
 void loop() {
