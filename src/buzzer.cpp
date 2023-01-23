@@ -1,7 +1,7 @@
 #include "ROBLEX.h"
 
 
-void  ROBLEX::PlayMelody(int *melody, unsigned int n, int tempo) {
+void  ROBLEX::PlayMelody(int channel, int *melody, unsigned int n, int tempo) {
   int notes = n /  2;
 
   // this calculates the duration of a whole note in ms
@@ -21,10 +21,10 @@ void  ROBLEX::PlayMelody(int *melody, unsigned int n, int tempo) {
       noteDuration *= 1.5; // increases the duration in half for dotted notes
     }
     // we only play the note for 90% of the duration, leaving 10% as a pause
-    ledcWriteTone(0, melody[thisNote]);
+    ledcWriteTone(channel, melody[thisNote]);
     delay(noteDuration * 0.9);
 
-    ledcWriteTone(0, 0);
+    ledcWriteTone(channel, 0);
     delay(noteDuration * 0.1);
     // stop the waveform generation before the next note.
 
