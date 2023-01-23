@@ -2,9 +2,6 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-// Ejemplo uso del modulo puertos digitales para encender secuencia de leds
-
-// CONECTAR EL MODULO PUERTOS DIGITALES EN CUALQUIER PUERTO
 
 ROBLEX ROBLEX;  // llamar libreria ROBLEX
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
@@ -13,7 +10,7 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 #define BTNLED_PIN pin5B   // definir el led en el puerto 2B
 
 #define SENSOR_PIN pin1A  // definir el sensor en el puerto 2A
-#define SLED_PIN pin1B    // definir el led en el puerto 2B
+#define SNSLED_PIN pin1B    // definir el led en el puerto 2B
 
 #define BUZZZER_PIN pin3A  // definir el buzzer en el puerto 3A
 #define BOTON_PIN pin3B    // definir el boton en el puerto 3B
@@ -42,7 +39,7 @@ void setup() {
   Serial.println("start");
 
   pinMode(SENSOR_PIN, INPUT);                  //define el pin A como entrada
-  pinMode(SLED_PIN, OUTPUT);                   //define el pin B como salida
+  pinMode(SNSLED_PIN, OUTPUT);                   //define el pin B como salida
   pinMode(BOTONES_PIN, INPUT);                 //define el pin A como entrada
   pinMode(BTNLED_PIN, OUTPUT);                 //define el pin B como salida
   pinMode(BOTON_PIN, INPUT);                   // configurar el boton como entrada
@@ -103,9 +100,9 @@ int botones(int valor) {
 void loop() {
 
   if (digitalRead(boton) == 1) {
-    digitalWrite(SLED_PIN, HIGH);
+    digitalWrite(SNSLED_PIN, HIGH);
   } else {
-    digitalWrite(SLED_PIN, LOW);
+    digitalWrite(SNSLED_PIN, LOW);
   }
 
   // obtiene el boton presionado haciendo uso de la funcion creada anteriormente
@@ -119,20 +116,18 @@ void loop() {
   }
   if (presionado == DERECHA) {  // cambiar el color del led rgb con los otros botones
     ROBLEX.Rgb(255, 0, 0);      //rojo
-    Serial.print("DERECHA");
   } else if (presionado == ABAJO) {
     ROBLEX.Rgb(0, 255, 0);  //verde
-    Serial.print("ABAJO");
   } else if (presionado == IZQUIERDA) {
     ROBLEX.Rgb(0, 0, 255);  //azul
-    Serial.print("IZQUIERDA");
   } else {
     ROBLEX.Rgb(0, 0, 0);
   }
   if (presionado == NINGUNO) {
-    Serial.print("NINGUNO");
   }
-  Serial.println();
+
+
+  Serial.println(analogRead(pin1A));
 
   if (ROBLEX.FrontComplete()) {
     distanciaMM = ROBLEX.FrontRange();
