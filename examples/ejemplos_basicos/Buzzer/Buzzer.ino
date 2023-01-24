@@ -6,7 +6,7 @@
 
 // CONECTAR EL MODULO BUZZER EN EL PUERTO 3
 
-#define BUZZZER_PIN pin3A  // definir el buzzer en el puerto 3A
+#define BUZZER_PIN pin3A  // definir el buzzer en el puerto 3A
 #define BOTON_PIN pin3B    // definir el boton en el puerto 3B
 #define BUZZER_CHANNEL 0   // definir canal de salida del pwm
 
@@ -28,7 +28,7 @@ void setup() {
   Serial.println("start");
 
   pinMode(BOTON_PIN, INPUT);                   // configurar el boton como entrada
-  ledcAttachPin(BUZZZER_PIN, BUZZER_CHANNEL);  // configurar el buzzer como salida PWM en el canal 0
+  ledcAttachPin(BUZZER_PIN, BUZZER_CHANNEL);  // configurar el buzzer como salida PWM en el canal 0
 }
 
 
