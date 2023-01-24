@@ -34,7 +34,7 @@ void setup() {
 
 void loop() {
   // reproducir melodias
-  if (digitalRead(BOTON_PIN) == HIGH) {          // reproducir cuando se presiona el boton del modulo
+  if (digitalRead(BOTON_PIN) == 1) {          // reproducir cuando se presiona el boton del modulo
     int n = sizeof(melody) / sizeof(melody[0]);  // calcular el tamano de la melodia
     ROBLEX.PlayMelody(BUZZER_CHANNEL,melody, n, tempo);         // reproducir la melodia (melodia, tamano de la melodia, velocidad)
   }
