@@ -22,7 +22,7 @@ void setup() {
   a2dp_sink.set_i2s_config(i2s_config);
   a2dp_sink.set_avrc_metadata_callback(avrc_metadata_callback);
   a2dp_sink.set_stream_reader(read_data_stream);
-  a2dp_sink.start("InternalDAC");
+  a2dp_sink.start("Roblex Music");
 }
 // Then somewhere in your sketch:
 void read_data_stream(const uint8_t *data, uint32_t length) {
