@@ -23,8 +23,8 @@
 #define pin5B         4
 
 #define pinRojo       18//5//18
-#define pinVerde      19//14//19
-#define pinAzul       5//15//5
+#define pinVerde      5//14//19
+#define pinAzul       19//15//5
 
 #define boton         36//
 #define vin           35
