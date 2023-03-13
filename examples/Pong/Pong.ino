@@ -27,7 +27,7 @@ void setup() {
   display.display();
   unsigned long start = millis();
 
-  ROBLEX.SetupPort(5, INPUT, OUTPUT);
+  ROBLEX.SetupPort(3, INPUT, OUTPUT);
   display.clearDisplay();
   drawCourt();
 
@@ -52,18 +52,18 @@ void loop() {
   static bool down_state = false;
 
 
-  digitalWrite(pin5B, 1);  
+  digitalWrite(pin3B, 1);  
 
-  int botones = analogRead(pin5A);
+  int botones = analogRead(pin3A);
 
   Serial.println(botones);
 
   if (botones > 4000) {//left
-    up_state = true;
+    down_state = true;
   } else if (botones > 3000) {//up
   } else if (botones > 2000) {//down
   } else if (botones > 1000) { //right
-    down_state = true;
+    up_state = true;
   } else {
   }
 
@@ -146,3 +146,4 @@ void loop() {
   if (update)
     display.display();
 }
+
