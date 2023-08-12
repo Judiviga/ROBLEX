@@ -15,7 +15,7 @@ void setup() {
 
   pcf.begin(0x27, &Wire); // iniciar pcf 
 
-  for (int p = 1; p <= 6; p++) {  // configurar los 6 puertos como salidas
+  for (int p = 0; p <= 7; p++) {  // configurar los 6 puertos como salidas
     pcf.pinMode(p, OUTPUT);
   }
 
@@ -23,7 +23,7 @@ void setup() {
 
 void loop() {
 
-  for (int p = 1; p <= 6; p++) {
+  for (int p = 0; p <= 7; p++) {
     pcf.digitalWrite(p, HIGH);  // encender el led respectivo en la secuencia
     delay(100);                 // tiempo de encendido de cada led
     pcf.digitalWrite(p, LOW);   // apagar el led
