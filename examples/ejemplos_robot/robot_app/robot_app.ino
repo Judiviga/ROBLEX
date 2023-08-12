@@ -4,7 +4,7 @@
 #include <Adafruit_SSD1306.h>
 
 
-// Ejemplo controlar robot con la aplicacion de celular
+// Ejemplo controlar robot con la aplicacion de celular o control remoto
 
 // CONECTAR EL MODULO DRIVER DE MOTOR IZQUIERDO EN EL PUERTO 4,  EL DERECHO EN EL PUERTO 5 Y LA PANTALLA EN CUALQUIER OTRO
 
