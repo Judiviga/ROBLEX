@@ -3,6 +3,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
+
 // Ejemplo controlar robot con la aplicacion de celular
 
 // CONECTAR EL MODULO DRIVER DE MOTOR IZQUIERDO EN EL PUERTO 4,  EL DERECHO EN EL PUERTO 5 Y LA PANTALLA EN CUALQUIER OTRO
@@ -10,8 +11,7 @@
 ROBLEX ROBLEX;
 
 BluetoothSerial SerialBT;
-
-String RobotName = "ROBLEX Robot";  // nombre del robot en el buletooth
+String RobotName = "ROBLEX ROBOT";  // nombre del robot en el buletooth
 
 #define LEFT_PWM MCPWM_UNIT_0
 #define RIGHT_PWM MCPWM_UNIT_1
@@ -23,6 +23,7 @@ void setup() {
   //Configurar los motores en los puertos respectivos con una frecuencia de pwm de 20000
   ROBLEX.SetupMotor(4, LEFT_PWM, 20000);
   ROBLEX.SetupMotor(5, RIGHT_PWM, 20000);
+
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // iniciar la pantalla oled
   display.clearDisplay();
@@ -37,7 +38,11 @@ void setup() {
   display.print(RobotName);
   display.display();
 
+
+  Serial.begin(115200);
+
   SerialBT.begin(RobotName);  //iniciar la comunicacion bluetooth con el nombre asignado
+  Serial.println(SerialBT.getBtAddressString());
 }
 
 //crear funcion para mover los motores
@@ -58,7 +63,10 @@ void Drive(mcpwm_unit_t unit, int out) {
 void loop() {
 
   if (SerialBT.available()) {
+
     String cmd = SerialBT.readStringUntil('\n');
+    
+    Serial.print(cmd);
     ROBLEX.ReadApp(cmd);  //leer la aplicacion y asigna las siguientes variables
     /*
     ROBLEX.AppValue[0]  = valor del motor derecho
@@ -68,14 +76,14 @@ void loop() {
     ROBLEX.AppValue[4]  = valor del led azul     
   */
     //mueve los motores segun el valor de la app
-    Drive(RIGHT_PWM, ROBLEX.AppValue[0].toInt());
-    Drive(LEFT_PWM, ROBLEX.AppValue[1].toInt());
+    Drive(RIGHT_PWM, -ROBLEX.AppValue[0].toInt());
+    Drive(LEFT_PWM, -ROBLEX.AppValue[1].toInt());
+
     //cambia el color del led RGB segun el valor de la app
     ROBLEX.Rgb(ROBLEX.AppValue[2].toInt(), ROBLEX.AppValue[3].toInt(), ROBLEX.AppValue[4].toInt());
   }
 
   if (!SerialBT.connected(200)) {
-    Serial.print("desconectado");
     ROBLEX.ReadApp("0");
   }
 }
