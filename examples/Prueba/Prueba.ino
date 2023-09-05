@@ -88,9 +88,9 @@ int botones(int valor) {
     return ARRIBA;
   } else if (valor > 3000) {
     return DERECHA;
-  } else if (valor > 1000) {
+  } else if (valor > 2000) {
     return ABAJO;
-  } else if (valor > 500) {
+  } else if (valor > 1000) {
     return IZQUIERDA;
   } else {
     return NINGUNO;
