@@ -2,8 +2,16 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-
 ROBLEX ROBLEX;  // llamar libreria ROBLEX
+
+// Ejemplo para probar el funcionamiento de los modulos
+
+// MODULO SENSOR ANALOGO ( POTENCIOMETRO, SENSOR DE LUZ, SENSOR DE SONIDO) EN EL PUERTO 1
+// MODULO SENSOR DE DISTANCIA EN EL PUERTO 2
+// MODULO BUZZER EN EL PUERTO 3
+// MODULO PANTALLA OLED EN EL PUERTO 4
+// MODULO BOTONES EN EL PUERTO 5
+
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
 #define BOTONES_PIN pin5A  // definir el sensor en el puerto 2A
@@ -110,7 +118,6 @@ void loop() {
   // realizar funciones segun el boton presionado
   if (presionado == ARRIBA) {  // encender el led del modulo de botones si se presiona el boton de arriba
     digitalWrite(BTNLED_PIN, 255);
-    Serial.print("ARRIBA");
   } else {
     digitalWrite(BTNLED_PIN, 0);
   }
