@@ -84,15 +84,15 @@ void loop() {
 
   display.clearDisplay();  // limpia la informacion del display
 
+  //texto
   display.setTextSize(1);       // tamano de la letra
   display.setTextColor(WHITE,BLACK);   //configurar el color del texto y del fondo
   display.setCursor(30, 0);     // posicion del cursor en la pantalla (x,y)
   display.print("Hola Mundo");  //imprimir un texto en la pantalla
 
+  //figuras
   display.drawLine(5, 0, 25, 64, WHITE);  //dibujar linea (x0,y0,x1,y1, WHITE)
-
   display.drawCircle(64, 32, 15, WHITE);  //dibujar circunferencia (x0,y0,r, WHITE)
-
   display.fillRect(100, 5, 20, 50, WHITE);  //dibujar rectangulo relleno (x0,y0,ancho,alto, WHITE)
 
   // display.drawBitmap(0, 0, imagen, 128, 64, WHITE);  //imprimir imagen del logo ROBLEX en la pantalla
