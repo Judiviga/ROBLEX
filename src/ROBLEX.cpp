@@ -7,11 +7,7 @@ ROBLEX::ROBLEX() {
   pinMode(pinAzul, OUTPUT);
   pinMode(boton, INPUT);
   Wire.begin();
-  ledcSetup(0, 2000, 8);
-  ledcSetup(1, 30000, 8);
-  ledcSetup(2, 30000, 8);
-  ledcSetup(3, 30000, 8);
-  ledcSetup(4, 30000, 8);
+
 }
 
 void ROBLEX::Rgb(int R , int G , int B) {
@@ -23,21 +19,17 @@ void ROBLEX::Rgb(int R , int G , int B) {
 void ROBLEX::Drive(int pwm, int chA , int chB) {
   if (pwm < 0) {
 
-    ledcWrite(chA, -pwm);
-    ledcWrite(chB, 0);
-    /*
+
       analogWrite(chA, -pwm);
       analogWrite(chB, 255);
-    */
+    
 
   } else { //  forward
 
-    ledcWrite(chA, 0);
-    ledcWrite(chB, pwm);
-    /*
+
         analogWrite(chA, 255);
         analogWrite(chB, pwm);
-    */
+    
   }
 }
 
