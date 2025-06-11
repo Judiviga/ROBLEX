@@ -19,7 +19,7 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 #define JOY_RY pin5B
 
 #define GATILLO_L pin2A
-#define GATILLO_R pin2A
+#define GATILLO_R pin2B
 
 #define POT pin1A
 #define POT_LED pin1B
@@ -80,18 +80,17 @@ void loop() {
   int value = map(analogRead(POT), 0, 4095, 0, 250);
   ColorPicker(value);
 
-
   //leer los joysticks
   int y = analogRead(JOY_LY);
   int x = analogRead(JOY_RX);
 
-//configurar la maxima velocidad segun potenciometro
+  //configurar la maxima velocidad segun potenciometro
   int max = map(analogRead(POT), 0, 4095, 40, 100);
 
   y = map(y, 0, 4095, -max, max);
   x = map(x, 0, 4095, -max * giroVel, max * giroVel);
 
-//velocidad minima
+  //velocidad minima
   if (abs(y) < 20) y = 0;
   if (abs(x) < 5) x = 0;
 
@@ -108,19 +107,13 @@ void loop() {
   String message = String(-outL) + "," + String(-outR) + "," + String(r) + "," + String(g) + "," + String(b);
 
 
-
   if (BT.connected()) {
     BT.println(message);
   } else {
     BT.connect(robotAddress);
   }
   Serial.println(message);
-  /*
-  Serial.print(outL);
-  Serial.print("  ");
-  Serial.print(outR);
-  Serial.println();
-*/
+
   delay(50);
 }
 
