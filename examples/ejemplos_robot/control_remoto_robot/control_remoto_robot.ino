@@ -24,6 +24,10 @@ void setup() {
   ROBLEX.SetupMotor(4, LEFT_PWM, 20000);
   ROBLEX.SetupMotor(5, RIGHT_PWM, 20000);
 
+  // configuracion para robot de 4 motores
+  ROBLEX.SetupMotor(1, LEFT_PWM, 20000);
+  ROBLEX.SetupMotor(3, RIGHT_PWM, 20000);
+
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // iniciar la pantalla oled
   display.clearDisplay();
