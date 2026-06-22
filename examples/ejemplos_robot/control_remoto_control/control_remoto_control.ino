@@ -51,7 +51,7 @@ void drawRobotMenu(int sel, int n) {
   display.println("Elige robot:");
 
   for (int i = first; i < n && i < first + VISIBLE; i++) {
-    display.setCursor(0, 12 + (i - first) * 10);
+    display.setCursor(0, 16 + (i - first) * 10);
     display.print(i == sel ? "> " : "  ");
     display.println(ROBLEX.BluetoothScanName(i));
   }
@@ -109,12 +109,7 @@ void setup() {
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.clearDisplay();  //for Clearing the display
-  display.drawBitmap(0, 0, ROBLEX.LogoRoblex, 128, 64, WHITE);
-  int namePosition = round((128 - ControlName.length() * 5) / 2);
   display.setTextColor(WHITE);
-  display.setTextSize(1);
-  display.setCursor(namePosition, 0);
-  display.print(ControlName);
   display.display();
 
   pinMode(JOY_LY, INPUT);
@@ -152,7 +147,8 @@ void setup() {
   display.setTextSize(1);
   display.setCursor(0, 0);
   display.println("Conectando a:");
-  display.setTextSize(2);
+  display.setCursor(0, 16);
+  display.setTextSize(1);
   display.println(robotName);  // mostrar el NOMBRE, no la MAC
   display.display();
 
@@ -166,11 +162,9 @@ void setup() {
   display.setTextSize(1);
   display.setCursor(0, 0);
   display.println("Conectado a:");
-  display.setTextSize(2);
-  display.println(robotName);
   display.setTextSize(1);
-  display.setCursor(0, 56);
-  display.print("BOTON=otro robot");
+  display.setCursor(0, 16);
+  display.println(robotName);
   display.display();
 
   ROBLEX.Rgb(100, 100, 100);

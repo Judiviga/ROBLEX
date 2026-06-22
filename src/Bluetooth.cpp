@@ -251,20 +251,31 @@ static String _scanAddrs[ROBLEX_MAX_SCAN];
 static int _scanCount = 0;
 
 // Recoge robots unicos que anuncian el servicio NUS.
+//
+// Importante: el UUID del servicio (en el ADV_IND) y el nombre (en el
+// SCAN_RSP) llegan en reportes BLE SEPARADOS. Por eso no se finaliza el nombre
+// en el primer reporte: si el dispositivo ya esta en la lista, se actualiza su
+// nombre cuando llega el reporte que lo trae.
 class _RoblexScanListCallbacks : public BLEAdvertisedDeviceCallbacks {
   void onResult(BLEAdvertisedDevice dev) {
-    if (!dev.haveServiceUUID() ||
-        !dev.isAdvertisingService(BLEUUID(ROBLEX_BLE_SERVICE)))
-      return;
-
     String addr = dev.getAddress().toString();
+    String name = dev.getName();
+
+    // Si ya esta en la lista, solo actualizar el nombre cuando este reporte
+    // lo traiga (normalmente el scan response).
     for (int i = 0; i < _scanCount; i++) {
-      if (_scanAddrs[i] == addr) return;  // ya esta en la lista
+      if (_scanAddrs[i] == addr) {
+        if (name.length() > 0) _scanNames[i] = name;
+        return;
+      }
     }
-    if (_scanCount < ROBLEX_MAX_SCAN) {
+
+    // Nuevo dispositivo: agregar solo si anuncia el servicio NUS (robot ROBLEX).
+    if (dev.haveServiceUUID() &&
+        dev.isAdvertisingService(BLEUUID(ROBLEX_BLE_SERVICE)) &&
+        _scanCount < ROBLEX_MAX_SCAN) {
       _scanAddrs[_scanCount] = addr;
-      String n = dev.getName();
-      _scanNames[_scanCount] = (n.length() > 0) ? n : addr;
+      _scanNames[_scanCount] = (name.length() > 0) ? name : addr;
       _scanCount++;
     }
   }
@@ -277,8 +288,10 @@ int ROBLEX::BluetoothScan(int seconds) {
   _scanCount = 0;
 
   BLEScan *scan = BLEDevice::getScan();
-  scan->setAdvertisedDeviceCallbacks(&_scanListCb);
-  scan->setActiveScan(true);
+  // wantDuplicates=true: recibir tambien el scan response (que trae el nombre),
+  // que llega en un reporte distinto al del UUID del servicio.
+  scan->setAdvertisedDeviceCallbacks(&_scanListCb, true);
+  scan->setActiveScan(true);  // scan activo: solicita el scan response
   scan->setInterval(100);
   scan->setWindow(99);
   scan->start(seconds, false);
