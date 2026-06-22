@@ -89,6 +89,14 @@ class ROBLEX {
     bool BluetoothRobotConnected(void);
     void BluetoothSend(String message);
 
+    // Escaneo de robots (para hacer un buscador/menu en el control).
+    //   BluetoothScan(seconds)   escanea y devuelve cuantos robots encontro
+    //   BluetoothScanName(i)     nombre del robot i
+    //   BluetoothScanAddress(i)  MAC del robot i (para BluetoothConnectAddress)
+    int BluetoothScan(int seconds = 4);
+    String BluetoothScanName(int index);
+    String BluetoothScanAddress(int index);
+
     void SetupPort(uint8_t port, uint8_t mode1 , uint8_t mode2);
     
     void Drive(int pwm = 0, int chA = 0, int chB = 0);

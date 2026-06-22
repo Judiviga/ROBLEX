@@ -1,19 +1,24 @@
 #include "ROBLEX.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Preferences.h>
 ROBLEX ROBLEX;
 
 // Ejemplo de control remoto fisico (otro ESP32 + placa ROBLEX con joysticks)
 // que se conecta al robot por BLE y le envia los comandos.
-
-// MAC unica del robot al que se conecta este control. La imprime el robot por
-// el monitor serial al encender ("Direccion BLE del robot: ..."). Conectar por
-// MAC evita ambiguedades cuando hay varios robots con el mismo nombre.
-String robotAddress = "D4:D4:DA:E4:A2:DE";
+//
+// BUSCADOR DE ROBOTS: al encender, si no hay un robot guardado (o si mantienes
+// presionado GATILLO_L mientras enciende), aparece en la OLED una lista de los
+// robots encontrados. Navega con el joystick izquierdo (arriba/abajo) y
+// selecciona con GATILLO_R. El robot elegido se guarda y la proxima vez se
+// conecta solo, sin tener que tocar el codigo.
 
 String ControlName = "Control ROBLEX";
 
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
+Preferences prefs;
+
+String robotAddress = "";  // MAC del robot pareado (se guarda en memoria)
 
 #define JOY_LX pin4A
 #define JOY_LY pin4B
@@ -29,6 +34,70 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
 #define BTNS pin3A
 #define BTNS_LED pin3B
+
+// Dibuja la lista de robots en la OLED (con scroll si hay muchos)
+void drawRobotMenu(int sel, int n) {
+  const int VISIBLE = 5;
+  int first = 0;
+  if (sel >= VISIBLE) first = sel - VISIBLE + 1;
+
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
+  display.println("Elige robot:");
+
+  for (int i = first; i < n && i < first + VISIBLE; i++) {
+    display.setCursor(0, 12 + (i - first) * 10);
+    display.print(i == sel ? "> " : "  ");
+    display.println(ROBLEX.BluetoothScanName(i));
+  }
+  display.display();
+}
+
+// Escanea y deja elegir un robot; devuelve su MAC.
+String selectRobot() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
+  display.println("Buscando robots...");
+  display.display();
+
+  int n = ROBLEX.BluetoothScan(4);
+
+  if (n == 0) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("Sin robots.");
+    display.println("");
+    display.println("GATILLO_R: reintentar");
+    display.display();
+    while (digitalRead(GATILLO_R) != HIGH) delay(50);
+    delay(300);
+    return selectRobot();
+  }
+
+  int sel = 0;
+  while (true) {
+    drawRobotMenu(sel, n);
+
+    int jy = analogRead(JOY_LY);
+    if (jy > 3000) {  // joystick arriba
+      sel = (sel - 1 + n) % n;
+      delay(200);
+    } else if (jy < 1000) {  // joystick abajo
+      sel = (sel + 1) % n;
+      delay(200);
+    }
+
+    if (digitalRead(GATILLO_R) == HIGH) {  // seleccionar
+      delay(300);
+      return ROBLEX.BluetoothScanAddress(sel);
+    }
+    delay(40);
+  }
+}
 
 void setup() {
 
@@ -59,7 +128,24 @@ void setup() {
   pinMode(BTNS, INPUT);
   pinMode(BTNS_LED, OUTPUT);
 
-  // Conectarse al robot por su MAC unica (reintenta hasta lograrlo)
+  // Cargar el robot guardado
+  prefs.begin("roblex", false);
+  robotAddress = prefs.getString("robot", "");
+
+  // Abrir el buscador si no hay robot guardado, o si se mantiene GATILLO_L
+  // presionado al encender (para cambiar de robot).
+  if (robotAddress == "" || digitalRead(GATILLO_L) == HIGH) {
+    robotAddress = selectRobot();
+    prefs.putString("robot", robotAddress);  // recordar la eleccion
+  }
+
+  // Conectarse al robot elegido (reintenta hasta lograrlo)
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.println("Conectando a:");
+  display.println(robotAddress);
+  display.display();
+
   while (!ROBLEX.BluetoothConnectAddress(robotAddress)) {
     Serial.println("No se encontro el robot. Verifica que este encendido y en rango.");
   }

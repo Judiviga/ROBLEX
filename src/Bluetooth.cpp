@@ -19,6 +19,15 @@ static String _roblexRxBuffer = "";   // arma la linea actual
 static String _roblexRxLine = "";     // ultima linea completa recibida
 static volatile bool _roblexLineReady = false;
 
+// BLEDevice::init() solo debe llamarse una vez.
+static bool _roblexBleInited = false;
+static void _roblexEnsureInit(const char *name) {
+  if (!_roblexBleInited) {
+    BLEDevice::init(name);
+    _roblexBleInited = true;
+  }
+}
+
 // Parser de la cadena "outR,outL,R,G,B" que envia la app.
 void ROBLEX::ReadApp(String cmd) {
   int index[20];
@@ -66,7 +75,7 @@ class _RoblexRxCallbacks : public BLECharacteristicCallbacks {
 };
 
 void ROBLEX::BluetoothBegin(String name) {
-  BLEDevice::init(name.c_str());
+  _roblexEnsureInit(name.c_str());
   BLEServer *server = BLEDevice::createServer();
   server->setCallbacks(new _RoblexServerCallbacks());
 
@@ -150,7 +159,7 @@ class _RoblexScanCallbacks : public BLEAdvertisedDeviceCallbacks {
 };
 
 bool ROBLEX::BluetoothConnectRobot(String name) {
-  BLEDevice::init("");  // inicializa BLE como central (cliente)
+  _roblexEnsureInit("");  // inicializa BLE como central (cliente)
   _roblexTargetName = name;
   if (_roblexFound != nullptr) {
     delete _roblexFound;
@@ -190,7 +199,7 @@ bool ROBLEX::BluetoothConnectRobot(String name) {
 }
 
 bool ROBLEX::BluetoothConnectAddress(String mac) {
-  BLEDevice::init("");  // inicializa BLE como central (cliente)
+  _roblexEnsureInit("");  // inicializa BLE como central (cliente)
 
   // Conexion directa a la MAC unica del robot (sin escaneo por nombre).
   _roblexClient = BLEDevice::createClient();
@@ -223,4 +232,60 @@ void ROBLEX::BluetoothSend(String message) {
     String m = message + "\n";
     _roblexRemoteRx->writeValue(m, false);  // write sin respuesta
   }
+}
+
+// ===================================================================
+//  Escaneo de robots (para construir un buscador/menu en el control)
+// ===================================================================
+
+#define ROBLEX_MAX_SCAN 10
+static String _scanNames[ROBLEX_MAX_SCAN];
+static String _scanAddrs[ROBLEX_MAX_SCAN];
+static int _scanCount = 0;
+
+// Recoge robots unicos que anuncian el servicio NUS.
+class _RoblexScanListCallbacks : public BLEAdvertisedDeviceCallbacks {
+  void onResult(BLEAdvertisedDevice dev) {
+    if (!dev.haveServiceUUID() ||
+        !dev.isAdvertisingService(BLEUUID(ROBLEX_BLE_SERVICE)))
+      return;
+
+    String addr = dev.getAddress().toString();
+    for (int i = 0; i < _scanCount; i++) {
+      if (_scanAddrs[i] == addr) return;  // ya esta en la lista
+    }
+    if (_scanCount < ROBLEX_MAX_SCAN) {
+      _scanAddrs[_scanCount] = addr;
+      String n = dev.getName();
+      _scanNames[_scanCount] = (n.length() > 0) ? n : addr;
+      _scanCount++;
+    }
+  }
+};
+
+static _RoblexScanListCallbacks _scanListCb;
+
+int ROBLEX::BluetoothScan(int seconds) {
+  _roblexEnsureInit("");
+  _scanCount = 0;
+
+  BLEScan *scan = BLEDevice::getScan();
+  scan->setAdvertisedDeviceCallbacks(&_scanListCb);
+  scan->setActiveScan(true);
+  scan->setInterval(100);
+  scan->setWindow(99);
+  scan->start(seconds, false);
+  scan->clearResults();
+
+  return _scanCount;
+}
+
+String ROBLEX::BluetoothScanName(int index) {
+  if (index < 0 || index >= _scanCount) return "";
+  return _scanNames[index];
+}
+
+String ROBLEX::BluetoothScanAddress(int index) {
+  if (index < 0 || index >= _scanCount) return "";
+  return _scanAddrs[index];
 }
