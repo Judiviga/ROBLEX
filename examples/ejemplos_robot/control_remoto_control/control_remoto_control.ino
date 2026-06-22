@@ -67,7 +67,7 @@ String selectRobot() {
   display.println("Buscando robots...");
   display.display();
 
-  int n = ROBLEX.BluetoothScan(4);
+  int n = ROBLEX.BluetoothScan(6);
 
   if (n == 0) {
     display.clearDisplay();
@@ -87,10 +87,10 @@ String selectRobot() {
 
     int jy = analogRead(JOY_LY);
     if (jy > 3000) {  // joystick arriba
-      sel = (sel - 1 + n) % n;
+      sel = (sel + 1) % n;
       delay(200);
     } else if (jy < 1000) {  // joystick abajo
-      sel = (sel + 1) % n;
+      sel = (sel - 1 + n) % n;
       delay(200);
     }
 
@@ -170,6 +170,19 @@ void setup() {
   ROBLEX.Rgb(100, 100, 100);
 }
 
+// Muestra en la OLED si el control esta conectado o no al robot
+void showStatus(bool connected) {
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.println(connected ? "Conectado a:" : "DESCONECTADO");
+  display.setTextSize(2);
+  display.setCursor(0, 16);
+  display.println(robotName);
+  display.display();
+}
+
 int r, g, b;
 
 float giroVel = 0.5;
@@ -207,7 +220,15 @@ void loop() {
   String message = String(-outL) + "," + String(-outR) + "," + String(r) + "," + String(g) + "," + String(b);
 
 
-  if (ROBLEX.BluetoothRobotConnected()) {
+  // Detectar cambios de conexion y mostrarlos en la pantalla
+  bool connected = ROBLEX.BluetoothRobotConnected();
+  static bool lastConnected = true;  // en setup ya quedo conectado
+  if (connected != lastConnected) {
+    showStatus(connected);
+    lastConnected = connected;
+  }
+
+  if (connected) {
     ROBLEX.BluetoothSend(message);
   } else {
     //si se perdio la conexion, reintentar

@@ -185,8 +185,10 @@ bool ROBLEX::BluetoothConnectRobot(String name) {
   if (_roblexFound == nullptr) return false;
 
   // Conectar y descubrir la caracteristica RX del robot
-  _roblexClient = BLEDevice::createClient();
-  _roblexClient->setClientCallbacks(new _RoblexClientCallbacks());
+  if (_roblexClient == nullptr) {  // reutilizar el cliente (no crear uno nuevo en cada reintento)
+    _roblexClient = BLEDevice::createClient();
+    _roblexClient->setClientCallbacks(new _RoblexClientCallbacks());
+  }
 
   if (!_roblexClient->connect(_roblexFound)) return false;
 
@@ -209,8 +211,10 @@ bool ROBLEX::BluetoothConnectAddress(String mac) {
   _roblexEnsureInit("");  // inicializa BLE como central (cliente)
 
   // Conexion directa a la MAC unica del robot (sin escaneo por nombre).
-  _roblexClient = BLEDevice::createClient();
-  _roblexClient->setClientCallbacks(new _RoblexClientCallbacks());
+  if (_roblexClient == nullptr) {  // reutilizar el cliente (no crear uno nuevo en cada reintento)
+    _roblexClient = BLEDevice::createClient();
+    _roblexClient->setClientCallbacks(new _RoblexClientCallbacks());
+  }
 
   if (!_roblexClient->connect(BLEAddress(mac))) return false;
 
