@@ -19,6 +19,7 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 Preferences prefs;
 
 String robotAddress = "";  // MAC del robot pareado (se guarda en memoria)
+String robotName = "";     // nombre del robot pareado (para mostrar en pantalla)
 
 #define JOY_LX pin4A
 #define JOY_LY pin4B
@@ -93,6 +94,7 @@ String selectRobot() {
 
     if (digitalRead(GATILLO_R) == HIGH) {  // seleccionar
       delay(300);
+      robotName = ROBLEX.BluetoothScanName(sel);  // recordar el nombre elegido
       return ROBLEX.BluetoothScanAddress(sel);
     }
     delay(40);
@@ -128,28 +130,45 @@ void setup() {
   pinMode(BTNS, INPUT);
   pinMode(BTNS_LED, OUTPUT);
 
-  // Cargar el robot guardado
+  // Cargar el robot guardado (nombre + MAC)
   prefs.begin("roblex", false);
   robotAddress = prefs.getString("robot", "");
+  robotName = prefs.getString("robotName", "");
 
-  // Abrir el buscador si no hay robot guardado, o si se mantiene GATILLO_L
-  // presionado al encender (para cambiar de robot).
+  // RESETEAR / CAMBIAR DE ROBOT: abrir el buscador si no hay robot guardado, o
+  // si se mantiene GATILLO_L presionado al encender el control.
   if (robotAddress == "" || digitalRead(GATILLO_L) == HIGH) {
-    robotAddress = selectRobot();
-    prefs.putString("robot", robotAddress);  // recordar la eleccion
+    robotAddress = selectRobot();             // tambien fija robotName
+    prefs.putString("robot", robotAddress);   // recordar la eleccion
+    prefs.putString("robotName", robotName);
   }
 
   // Conectarse al robot elegido (reintenta hasta lograrlo)
   display.clearDisplay();
+  display.setTextSize(1);
   display.setCursor(0, 0);
   display.println("Conectando a:");
-  display.println(robotAddress);
+  display.setTextSize(2);
+  display.println(robotName);  // mostrar el NOMBRE, no la MAC
   display.display();
 
   while (!ROBLEX.BluetoothConnectAddress(robotAddress)) {
     Serial.println("No se encontro el robot. Verifica que este encendido y en rango.");
   }
   Serial.println("Conectado al robot!");
+
+  // Pantalla de conectado con el nombre del robot
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.println("Conectado a:");
+  display.setTextSize(2);
+  display.println(robotName);
+  display.setTextSize(1);
+  display.setCursor(0, 56);
+  display.print("GATILLO_L=otro robot");
+  display.display();
+
   ROBLEX.Rgb(100, 100, 100);
 }
 
