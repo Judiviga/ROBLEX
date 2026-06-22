@@ -39,8 +39,8 @@ void setup() {
   Serial.begin(115200);  // iniciar debug serial
   Serial.println("start");
 
-  pinMode(BOTON_PIN, INPUT);      //configurar el boton como entrada
-  ledcAttachPin(BUZZZER_PIN, 0);  //configurar el buzzer como salida PWM en el canal 0
+  pinMode(BOTON_PIN, INPUT);         //configurar el boton como entrada
+  ROBLEX.BuzzerBegin(BUZZZER_PIN);  //configurar el buzzer
 
   //configuracion de la tarea en el nucleo secundario
   xTaskCreatePinnedToCore(

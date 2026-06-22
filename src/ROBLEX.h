@@ -129,7 +129,14 @@ class ROBLEX {
     uint8_t FrontStatus(void);
     uint8_t RightStatus(void);
 
-    void PlayMelody(int channel, int *melody, unsigned int n, int tempo = 200);
+    // Buzzer. Llamar BuzzerBegin(pin) en setup antes de usar el resto.
+    //   PlayMelody(melody, n, tempo)  reproduce una melodia (bloqueante)
+    //   PlayTone(freq)                emite un tono continuo
+    //   NoTone()                      silencio
+    void BuzzerBegin(int pin);
+    void PlayMelody(int *melody, unsigned int n, int tempo = 200);
+    void PlayTone(int freq);
+    void NoTone(void);
 
   //motor
     void SetupMotor(uint8_t port, mcpwm_unit_t pwm_unit, uint32_t frequency);

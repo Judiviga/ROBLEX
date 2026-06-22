@@ -8,7 +8,6 @@
 
 #define BUZZER_PIN pin3A  // definir el buzzer en el puerto 3A
 #define BOTON_PIN pin3B    // definir el boton en el puerto 3B
-#define BUZZER_CHANNEL 0   // definir canal de salida del pwm
 
 ROBLEX ROBLEX;
 
@@ -27,8 +26,8 @@ void setup() {
   Serial.begin(115200);  // iniciar debug serial
   Serial.println("start");
 
-  pinMode(BOTON_PIN, INPUT);                   // configurar el boton como entrada
-  ledcAttachPin(BUZZER_PIN, BUZZER_CHANNEL);  // configurar el buzzer como salida PWM en el canal 0
+  pinMode(BOTON_PIN, INPUT);       // configurar el boton como entrada
+  ROBLEX.BuzzerBegin(BUZZER_PIN);  // configurar el buzzer
 }
 
 
@@ -36,16 +35,16 @@ void loop() {
   // reproducir melodias
   if (digitalRead(BOTON_PIN) == 1) {          // reproducir cuando se presiona el boton del modulo
     int n = sizeof(melody) / sizeof(melody[0]);  // calcular el tamano de la melodia
-    ROBLEX.PlayMelody(BUZZER_CHANNEL,melody, n, tempo);         // reproducir la melodia (melodia, tamano de la melodia, velocidad)
+    ROBLEX.PlayMelody(melody, n, tempo);         // reproducir la melodia (melodia, tamano de la melodia, velocidad)
   }
 
   // reproducir notas sueltas
   if (digitalRead(boton)== 1) {                   // reproducir cuando se presiona el boton de la shield
-    ledcWriteTone(BUZZER_CHANNEL, NOTE_E5);  // reproducir nota E5
+    ROBLEX.PlayTone(NOTE_E5);  // reproducir nota E5
     delay(200);
-    ledcWriteTone(BUZZER_CHANNEL, NOTE_G5);  // reproducir nota G5
+    ROBLEX.PlayTone(NOTE_G5);  // reproducir nota G5
     delay(200);
-    ledcWriteTone(BUZZER_CHANNEL, 0);  // silencio
+    ROBLEX.NoTone();  // silencio
     delay(200);
   } 
 }

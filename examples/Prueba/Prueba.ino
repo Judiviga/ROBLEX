@@ -22,7 +22,6 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
 #define BUZZZER_PIN pin3A  // definir el buzzer en el puerto 3A
 #define BOTON_PIN pin3B    // definir el boton en el puerto 3B
-#define BUZZER_CHANNEL 0   // definir canal de salida del pwm
 
 
 int x[128];  //variable para la grafica
@@ -51,7 +50,7 @@ void setup() {
   pinMode(BOTONES_PIN, INPUT);                 //define el pin A como entrada
   pinMode(BTNLED_PIN, OUTPUT);                 //define el pin B como salida
   pinMode(BOTON_PIN, INPUT);                   // configurar el boton como entrada
-  ledcAttachPin(BUZZZER_PIN, BUZZER_CHANNEL);  // configurar el buzzer como salida PWM en el canal 0
+  ROBLEX.BuzzerBegin(BUZZZER_PIN);  // configurar el buzzer
 
   ROBLEX.SetupDistance(2, false, true, false);  //iniciar el modulo de distancia en el puerto 2 con el sensor frontal
 
@@ -76,7 +75,7 @@ void Task1code(void* pvParameters) {
     // reproducir melodias
     if (digitalRead(BOTON_PIN) == HIGH) {                   // reproducir cuando se presiona el boton del modulo
       int n = sizeof(melody) / sizeof(melody[0]);           // calcular el tamano de la melodia
-      ROBLEX.PlayMelody(BUZZER_CHANNEL, melody, n, tempo);  // reproducir la melodia (melodia, tamano de la melodia, velocidad)
+      ROBLEX.PlayMelody(melody, n, tempo);  // reproducir la melodia (melodia, tamano de la melodia, velocidad)
     }
     delay(20);
   }
