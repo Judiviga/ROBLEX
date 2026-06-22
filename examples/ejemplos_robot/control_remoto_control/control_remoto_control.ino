@@ -1,15 +1,18 @@
 #include "ROBLEX.h"
-#include "BluetoothSerial.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 ROBLEX ROBLEX;
 
-// Remplazar con el address del robot
-uint8_t robotAddress[] = { 0xD4,0xD4,0xDA,0xE4,0xA2,0xDE };
+// Ejemplo de control remoto fisico (otro ESP32 + placa ROBLEX con joysticks)
+// que se conecta al robot por BLE y le envia los comandos.
+
+// Nombre del robot al que se conecta este control. Debe coincidir con el
+// RobotName del robot. Dejar "" para conectarse al primer robot ROBLEX que
+// aparezca en el escaneo.
+String RobotName = "ROBLEX ROBOT";
 
 String ControlName = "Control ROBLEX";
 
-BluetoothSerial BT;
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
 #define JOY_LX pin4A
@@ -56,18 +59,12 @@ void setup() {
   pinMode(BTNS, INPUT);
   pinMode(BTNS_LED, OUTPUT);
 
-
-  BT.begin(ControlName, true);
-  bool connected = BT.connect(robotAddress);
-
-  if (connected) {
-    Serial.println("Connected Succesfully!");
-    ROBLEX.Rgb(100, 100, 100);
-  } else {
-    while (!BT.connected(10000)) {
-      Serial.println("Failed to connect. Make sure remote device is available and in range, then restart app.");
-    }
+  // Conectarse al robot por BLE (reintenta hasta lograrlo)
+  while (!ROBLEX.BluetoothConnectRobot(RobotName)) {
+    Serial.println("No se encontro el robot. Verifica que este encendido y en rango.");
   }
+  Serial.println("Conectado al robot!");
+  ROBLEX.Rgb(100, 100, 100);
 }
 
 int r, g, b;
@@ -107,10 +104,11 @@ void loop() {
   String message = String(-outL) + "," + String(-outR) + "," + String(r) + "," + String(g) + "," + String(b);
 
 
-  if (BT.connected()) {
-    BT.println(message);
+  if (ROBLEX.BluetoothRobotConnected()) {
+    ROBLEX.BluetoothSend(message);
   } else {
-    BT.connect(robotAddress);
+    //si se perdio la conexion, reintentar
+    ROBLEX.BluetoothConnectRobot(RobotName);
   }
   Serial.println(message);
 

@@ -1,17 +1,15 @@
 #include "ROBLEX.h"
-#include "BluetoothSerial.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
 
-// Ejemplo controlar robot con la aplicacion de celular o control remoto
+// Ejemplo controlar robot con la aplicacion de celular por BLE
 
 // CONECTAR EL MODULO DRIVER DE MOTOR IZQUIERDO EN EL PUERTO 4,  EL DERECHO EN EL PUERTO 5 Y LA PANTALLA EN CUALQUIER OTRO
 
 ROBLEX ROBLEX;
 
-BluetoothSerial SerialBT;
-String RobotName = "ROBLEX ROBOT";  // nombre del robot en el buletooth
+String RobotName = "ROBLEX ROBOT";  // nombre del robot en el bluetooth (cambialo por robot: "COBRA 1", "COBRA 2"...)
 
 #define LEFT_PWM MCPWM_UNIT_0
 #define RIGHT_PWM MCPWM_UNIT_1
@@ -45,8 +43,7 @@ void setup() {
 
   Serial.begin(115200);
 
-  SerialBT.begin(RobotName);  //iniciar la comunicacion bluetooth con el nombre asignado
-  Serial.println(SerialBT.getBtAddressString());
+  ROBLEX.BluetoothBegin(RobotName);  //iniciar la comunicacion BLE con el nombre asignado
 }
 
 //crear funcion para mover los motores
@@ -66,18 +63,18 @@ void Drive(mcpwm_unit_t unit, int out) {
 
 void loop() {
 
-  if (SerialBT.available()) {
+  if (ROBLEX.BluetoothAvailable()) {
 
-    String cmd = SerialBT.readStringUntil('\n');
-    
+    String cmd = ROBLEX.BluetoothRead();
+
     Serial.print(cmd);
     ROBLEX.ReadApp(cmd);  //leer la aplicacion y asigna las siguientes variables
     /*
     ROBLEX.AppValue[0]  = valor del motor derecho
     ROBLEX.AppValue[1]  = valor del motor izquierdo
-    ROBLEX.AppValue[2]  = valor del led rojo    
+    ROBLEX.AppValue[2]  = valor del led rojo
     ROBLEX.AppValue[3]  = valor del led verde
-    ROBLEX.AppValue[4]  = valor del led azul     
+    ROBLEX.AppValue[4]  = valor del led azul
   */
     //mueve los motores segun el valor de la app
     Drive(RIGHT_PWM, -ROBLEX.AppValue[0].toInt());
@@ -87,7 +84,9 @@ void loop() {
     ROBLEX.Rgb(ROBLEX.AppValue[2].toInt(), ROBLEX.AppValue[3].toInt(), ROBLEX.AppValue[4].toInt());
   }
 
-  if (!SerialBT.connected(200)) {
-    ROBLEX.ReadApp("0");
+  if (!ROBLEX.BluetoothConnected()) {
+    //si no hay conexion, detener los motores (seguridad)
+    Drive(RIGHT_PWM, 0);
+    Drive(LEFT_PWM, 0);
   }
 }

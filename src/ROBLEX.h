@@ -60,7 +60,28 @@ class ROBLEX {
     void Rgb(int R = 0, int G = 0, int B = 0);
     void ReadApp(String cmd);
     String AppValue[20];
-    
+
+    // Comunicacion con la app por BLE (Nordic UART Service).
+    // Reemplaza a BluetoothSerial; misma idea de uso:
+    //   BluetoothBegin()      ~ SerialBT.begin()
+    //   BluetoothAvailable()  ~ SerialBT.available()
+    //   BluetoothRead()       ~ SerialBT.readStringUntil('\n')
+    //   BluetoothConnected()  ~ SerialBT.connected()
+    void BluetoothBegin(String name = "ROBLEX ROBOT");
+    bool BluetoothAvailable(void);
+    String BluetoothRead(void);
+    bool BluetoothConnected(void);
+    void BluetoothWrite(String message);
+
+    // Lado control remoto fisico: conectarse a un robot como cliente BLE.
+    //   BluetoothConnectRobot()   busca y conecta al robot (por nombre, o al
+    //                             primer robot ROBLEX si name == "")
+    //   BluetoothRobotConnected() indica si el control esta conectado al robot
+    //   BluetoothSend()           envia un comando "outR,outL,R,G,B" al robot
+    bool BluetoothConnectRobot(String name = "");
+    bool BluetoothRobotConnected(void);
+    void BluetoothSend(String message);
+
     void SetupPort(uint8_t port, uint8_t mode1 , uint8_t mode2);
     
     void Drive(int pwm = 0, int chA = 0, int chB = 0);
