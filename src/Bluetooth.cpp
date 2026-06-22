@@ -6,6 +6,8 @@
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 #include <BLEClient.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 // UUIDs del Nordic UART Service (NUS). DEBEN coincidir con la app de control.
 #define ROBLEX_BLE_SERVICE "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
@@ -312,4 +314,108 @@ String ROBLEX::BluetoothScanName(int index) {
 String ROBLEX::BluetoothScanAddress(int index) {
   if (index < 0 || index >= _scanCount) return "";
   return _scanAddrs[index];
+}
+
+// ===================================================================
+//  Helpers de pantalla (OLED) para el control remoto
+// ===================================================================
+
+static String _roblexSelectedName = "";
+
+// Dibuja la lista de robots encontrados en la OLED (con scroll si hay muchos).
+static void _roblexDrawMenu(Adafruit_SSD1306 &display, int sel, int n) {
+  const int VISIBLE = 5;
+  int first = 0;
+  if (sel >= VISIBLE) first = sel - VISIBLE + 1;
+
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.println("Elige robot:");
+
+  for (int i = first; i < n && i < first + VISIBLE; i++) {
+    display.setCursor(0, 16 + (i - first) * 10);
+    display.print(i == sel ? "> " : "  ");
+    display.println(_scanNames[i]);
+  }
+  display.display();
+}
+
+String ROBLEX::SelectRobot(Adafruit_SSD1306 &display, int buttonPin, int joyPin,
+                           int scanSeconds) {
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.println("Buscando robots...");
+  display.display();
+
+  int n = BluetoothScan(scanSeconds);
+
+  if (n == 0) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("Sin robots.");
+    display.println("");
+    display.println("BOTON: reintentar");
+    display.display();
+    while (digitalRead(buttonPin) != HIGH) delay(50);
+    delay(300);
+    return SelectRobot(display, buttonPin, joyPin, scanSeconds);
+  }
+
+  int sel = 0;
+  while (true) {
+    _roblexDrawMenu(display, sel, n);
+
+    int jy = analogRead(joyPin);
+    if (jy > 3000) {
+      sel = (sel + 1) % n;
+      delay(200);
+    } else if (jy < 1000) {
+      sel = (sel - 1 + n) % n;
+      delay(200);
+    }
+
+    if (digitalRead(buttonPin) == HIGH) {  // seleccionar
+      delay(300);
+      _roblexSelectedName = BluetoothScanName(sel);
+      return BluetoothScanAddress(sel);
+    }
+    delay(40);
+  }
+}
+
+String ROBLEX::SelectedRobotName(void) {
+  return _roblexSelectedName;
+}
+
+void ROBLEX::ShowStatus(Adafruit_SSD1306 &display, bool connected, String name) {
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.println(connected ? "Conectado a:" : "desconectado:");
+  display.setTextSize(1);
+  display.setCursor(0, 16);
+  display.println(name);
+  display.display();
+}
+
+void ROBLEX::ColorWheel(int value, int &red, int &green, int &blue) {
+  if (value <= 100) {
+    red = 100 - value;
+    green = value;
+    blue = 0;
+  } else if (value <= 200) {
+    red = 0;
+    green = 200 - value;
+    blue = value - 100;
+  } else if (value <= 250) {
+    red = value - 200;
+    green = 0;
+    blue = 300 - value;
+  }
+  Rgb(red, green, blue);
 }

@@ -49,6 +49,9 @@
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
+// Forward-declaration para no obligar a incluir Adafruit_SSD1306 en este header
+class Adafruit_SSD1306;
+
 
 class ROBLEX {
 
@@ -96,6 +99,19 @@ class ROBLEX {
     int BluetoothScan(int seconds = 4);
     String BluetoothScanName(int index);
     String BluetoothScanAddress(int index);
+
+    // Helpers de pantalla (OLED) para el control remoto, listos para usar.
+    //   SelectRobot()        escanea y muestra un menu en la OLED para elegir un
+    //                        robot (navegar con el joystick, elegir con el boton).
+    //                        Devuelve la MAC; el nombre queda en SelectedRobotName().
+    //   SelectedRobotName()  nombre del robot elegido en el ultimo SelectRobot().
+    //   ShowStatus()         muestra "Conectado a:" / "desconectado:" + nombre.
+    //   ColorWheel()         mapea un valor 0-250 a un color RGB (arcoiris),
+    //                        enciende el LED y devuelve r/g/b por referencia.
+    String SelectRobot(Adafruit_SSD1306 &display, int buttonPin, int joyPin, int scanSeconds = 6);
+    String SelectedRobotName(void);
+    void ShowStatus(Adafruit_SSD1306 &display, bool connected, String name);
+    void ColorWheel(int value, int &red, int &green, int &blue);
 
     void SetupPort(uint8_t port, uint8_t mode1 , uint8_t mode2);
     
