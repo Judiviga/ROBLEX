@@ -97,6 +97,13 @@ void ROBLEX::BluetoothBegin(String name) {
   BLEAdvertising *advertising = BLEDevice::getAdvertising();
   advertising->addServiceUUID(ROBLEX_BLE_SERVICE);
   advertising->setScanResponse(true);
+
+  // Incluir el nombre en el scan response para que aparezca de forma fiable
+  // al escanear (en el buscador del control y en la app).
+  BLEAdvertisementData scanResponse;
+  scanResponse.setName(name);
+  advertising->setScanResponseData(scanResponse);
+
   BLEDevice::startAdvertising();
 }
 

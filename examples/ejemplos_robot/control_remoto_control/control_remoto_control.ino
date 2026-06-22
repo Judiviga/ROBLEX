@@ -36,6 +36,8 @@ String robotName = "";     // nombre del robot pareado (para mostrar en pantalla
 #define BTNS pin3A
 #define BTNS_LED pin3B
 
+#define BOTON boton  // boton de a bordo de la shield (GPIO36), activo en ALTO
+
 // Dibuja la lista de robots en la OLED (con scroll si hay muchos)
 void drawRobotMenu(int sel, int n) {
   const int VISIBLE = 5;
@@ -72,9 +74,9 @@ String selectRobot() {
     display.setCursor(0, 0);
     display.println("Sin robots.");
     display.println("");
-    display.println("GATILLO_R: reintentar");
+    display.println("BOTON: reintentar");
     display.display();
-    while (digitalRead(GATILLO_R) != HIGH) delay(50);
+    while (digitalRead(BOTON) != HIGH) delay(50);
     delay(300);
     return selectRobot();
   }
@@ -92,7 +94,7 @@ String selectRobot() {
       delay(200);
     }
 
-    if (digitalRead(GATILLO_R) == HIGH) {  // seleccionar
+    if (digitalRead(BOTON) == HIGH) {  // seleccionar con el boton
       delay(300);
       robotName = ROBLEX.BluetoothScanName(sel);  // recordar el nombre elegido
       return ROBLEX.BluetoothScanAddress(sel);
@@ -130,14 +132,16 @@ void setup() {
   pinMode(BTNS, INPUT);
   pinMode(BTNS_LED, OUTPUT);
 
+  pinMode(BOTON, INPUT);  // boton de a bordo para seleccionar / resetear
+
   // Cargar el robot guardado (nombre + MAC)
   prefs.begin("roblex", false);
   robotAddress = prefs.getString("robot", "");
   robotName = prefs.getString("robotName", "");
 
   // RESETEAR / CAMBIAR DE ROBOT: abrir el buscador si no hay robot guardado, o
-  // si se mantiene GATILLO_L presionado al encender el control.
-  if (robotAddress == "" || digitalRead(GATILLO_L) == HIGH) {
+  // si se mantiene el BOTON presionado al encender el control.
+  if (robotAddress == "" || digitalRead(BOTON) == HIGH) {
     robotAddress = selectRobot();             // tambien fija robotName
     prefs.putString("robot", robotAddress);   // recordar la eleccion
     prefs.putString("robotName", robotName);
@@ -166,7 +170,7 @@ void setup() {
   display.println(robotName);
   display.setTextSize(1);
   display.setCursor(0, 56);
-  display.print("GATILLO_L=otro robot");
+  display.print("BOTON=otro robot");
   display.display();
 
   ROBLEX.Rgb(100, 100, 100);
