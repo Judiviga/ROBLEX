@@ -44,6 +44,11 @@ void setup() {
   Serial.begin(115200);
 
   ROBLEX.BluetoothBegin(RobotName);  //iniciar la comunicacion BLE con el nombre asignado
+
+  //imprime la MAC BLE unica de este robot; copiala al control remoto para
+  //conectarse fijo a este robot (ROBLEX.BluetoothConnectAddress)
+  Serial.print("Direccion BLE del robot: ");
+  Serial.println(ROBLEX.BluetoothAddress());
 }
 
 //crear funcion para mover los motores

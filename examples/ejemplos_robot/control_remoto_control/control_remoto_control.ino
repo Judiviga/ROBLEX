@@ -6,10 +6,10 @@ ROBLEX ROBLEX;
 // Ejemplo de control remoto fisico (otro ESP32 + placa ROBLEX con joysticks)
 // que se conecta al robot por BLE y le envia los comandos.
 
-// Nombre del robot al que se conecta este control. Debe coincidir con el
-// RobotName del robot. Dejar "" para conectarse al primer robot ROBLEX que
-// aparezca en el escaneo.
-String RobotName = "ROBLEX ROBOT";
+// MAC unica del robot al que se conecta este control. La imprime el robot por
+// el monitor serial al encender ("Direccion BLE del robot: ..."). Conectar por
+// MAC evita ambiguedades cuando hay varios robots con el mismo nombre.
+String robotAddress = "D4:D4:DA:E4:A2:DE";
 
 String ControlName = "Control ROBLEX";
 
@@ -59,8 +59,8 @@ void setup() {
   pinMode(BTNS, INPUT);
   pinMode(BTNS_LED, OUTPUT);
 
-  // Conectarse al robot por BLE (reintenta hasta lograrlo)
-  while (!ROBLEX.BluetoothConnectRobot(RobotName)) {
+  // Conectarse al robot por su MAC unica (reintenta hasta lograrlo)
+  while (!ROBLEX.BluetoothConnectAddress(robotAddress)) {
     Serial.println("No se encontro el robot. Verifica que este encendido y en rango.");
   }
   Serial.println("Conectado al robot!");
@@ -108,7 +108,7 @@ void loop() {
     ROBLEX.BluetoothSend(message);
   } else {
     //si se perdio la conexion, reintentar
-    ROBLEX.BluetoothConnectRobot(RobotName);
+    ROBLEX.BluetoothConnectAddress(robotAddress);
   }
   Serial.println(message);
 

@@ -72,13 +72,20 @@ class ROBLEX {
     String BluetoothRead(void);
     bool BluetoothConnected(void);
     void BluetoothWrite(String message);
+    // Devuelve la direccion (MAC) BLE unica de este robot. Llamar despues de
+    // BluetoothBegin(). Sirve para fijarla en el control remoto.
+    String BluetoothAddress(void);
 
     // Lado control remoto fisico: conectarse a un robot como cliente BLE.
-    //   BluetoothConnectRobot()   busca y conecta al robot (por nombre, o al
-    //                             primer robot ROBLEX si name == "")
-    //   BluetoothRobotConnected() indica si el control esta conectado al robot
-    //   BluetoothSend()           envia un comando "outR,outL,R,G,B" al robot
+    //   BluetoothConnectRobot(name)   busca y conecta al robot por NOMBRE (o al
+    //                                 primer robot ROBLEX si name == ""). Comodo
+    //                                 pero ambiguo si varios robots se llaman igual.
+    //   BluetoothConnectAddress(mac)  conecta a un robot por su MAC UNICA
+    //                                 (ej. "D4:D4:DA:E4:A2:DE"). Sin ambiguedad.
+    //   BluetoothRobotConnected()     indica si el control esta conectado al robot
+    //   BluetoothSend()               envia un comando "outR,outL,R,G,B" al robot
     bool BluetoothConnectRobot(String name = "");
+    bool BluetoothConnectAddress(String mac);
     bool BluetoothRobotConnected(void);
     void BluetoothSend(String message);
 

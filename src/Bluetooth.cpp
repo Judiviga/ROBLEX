@@ -111,6 +111,11 @@ void ROBLEX::BluetoothWrite(String message) {
   }
 }
 
+String ROBLEX::BluetoothAddress(void) {
+  // Direccion (MAC) BLE de este dispositivo. Valida tras BluetoothBegin().
+  return BLEDevice::getAddress().toString();
+}
+
 // ===================================================================
 //  Lado CONTROL REMOTO: cliente BLE que se conecta al robot (servidor)
 // ===================================================================
@@ -168,6 +173,30 @@ bool ROBLEX::BluetoothConnectRobot(String name) {
   _roblexClient->setClientCallbacks(new _RoblexClientCallbacks());
 
   if (!_roblexClient->connect(_roblexFound)) return false;
+
+  BLERemoteService *service = _roblexClient->getService(BLEUUID(ROBLEX_BLE_SERVICE));
+  if (service == nullptr) {
+    _roblexClient->disconnect();
+    return false;
+  }
+  _roblexRemoteRx = service->getCharacteristic(BLEUUID(ROBLEX_BLE_RX));
+  if (_roblexRemoteRx == nullptr) {
+    _roblexClient->disconnect();
+    return false;
+  }
+
+  _roblexClientConnected = true;
+  return true;
+}
+
+bool ROBLEX::BluetoothConnectAddress(String mac) {
+  BLEDevice::init("");  // inicializa BLE como central (cliente)
+
+  // Conexion directa a la MAC unica del robot (sin escaneo por nombre).
+  _roblexClient = BLEDevice::createClient();
+  _roblexClient->setClientCallbacks(new _RoblexClientCallbacks());
+
+  if (!_roblexClient->connect(BLEAddress(mac))) return false;
 
   BLERemoteService *service = _roblexClient->getService(BLEUUID(ROBLEX_BLE_SERVICE));
   if (service == nullptr) {
