@@ -73,6 +73,9 @@ void setup() {
     prefs.putString("robot", robotAddress);
     prefs.putString("robotName", robotName);
   }
+  
+  // Mostrar estado "desconectado" antes de intentar la conexion
+  ROBLEX.ShowStatus(display, false, robotName);
 
   // Conectarse al robot elegido (reintenta hasta lograrlo)
   while (!ROBLEX.BluetoothConnectAddress(robotAddress)) {
