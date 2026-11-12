@@ -129,6 +129,18 @@ class ROBLEX {
     uint8_t FrontStatus(void);
     uint8_t RightStatus(void);
 
+    // Modulo sensor de linea: 8 sensores QRE1113 leidos por un ADC ADS7830 (I2C).
+    //   SetupLine(address)   inicia el modulo; devuelve false si no responde.
+    //                        Direccion de fabrica 0x48 (A0 y A1 a GND por R19/R17);
+    //                        quitando R19 queda en 0x49, R17 en 0x4A, ambas 0x4B.
+    //   LineValue(sensor)    lee un sensor (0-7 = CH0-CH7 del ADC): 0-255, alto
+    //                        sobre superficie blanca y bajo sobre la linea negra.
+    //                        Devuelve -1 si el modulo no responde.
+    //   LineValues(values)   lee los 8 sensores en values[0..7]; false si falla.
+    bool SetupLine(uint8_t address = 0x48);
+    int LineValue(uint8_t sensor);
+    bool LineValues(int *values);
+
     // Buzzer. Llamar BuzzerBegin(pin) en setup antes de usar el resto.
     //   PlayMelody(melody, n, tempo)  reproduce una melodia (bloqueante)
     //   PlayTone(freq)                emite un tono continuo

@@ -8,24 +8,43 @@
 #include <BLEClient.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
 
 // UUIDs del Nordic UART Service (NUS). DEBEN coincidir con la app de control.
 #define ROBLEX_BLE_SERVICE "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 #define ROBLEX_BLE_RX      "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"  // app -> robot
 #define ROBLEX_BLE_TX      "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"  // robot -> app
 
+// MTU que el robot acepta y el control remoto pide al conectarse. Bluedroid usa
+// 23 por defecto (20 bytes por paquete): no caben "-255,-255,255,255,0\n" (22)
+// ni "SEN,s0,...,s7,pos" (hasta 41), y el resto del mensaje se pierde.
+#define ROBLEX_BLE_MTU 517
+
+// Lineas completas recibidas (app -> robot). onWrite corre en la tarea del BLE
+// y BluetoothRead() en el loop, asi que pasan por una cola de FreeRTOS. Antes
+// solo se guardaba la ultima linea y dos comandos seguidos (p. ej. "SEN,1" y
+// "GET", o "PID,..." y "RUN,1") perdian el primero. Si el sketch no lee a
+// tiempo y la cola se llena, se descarta la linea mas vieja.
+#define ROBLEX_RX_LINES    8
+#define ROBLEX_RX_LINE_LEN 256  // las lineas mas largas se cortan
+
+typedef struct {
+  char text[ROBLEX_RX_LINE_LEN];
+} _RoblexLine;
+
 // Estado interno del BLE (un unico servidor por robot).
 static BLECharacteristic *_roblexTx = nullptr;
 static volatile bool _roblexConnected = false;
-static String _roblexRxBuffer = "";   // arma la linea actual
-static String _roblexRxLine = "";     // ultima linea completa recibida
-static volatile bool _roblexLineReady = false;
+static String _roblexRxBuffer = "";   // arma la linea actual (solo en la tarea del BLE)
+static QueueHandle_t _roblexRxQueue = nullptr;
 
 // BLEDevice::init() solo debe llamarse una vez.
 static bool _roblexBleInited = false;
 static void _roblexEnsureInit(const char *name) {
   if (!_roblexBleInited) {
     BLEDevice::init(name);
+    BLEDevice::setMTU(ROBLEX_BLE_MTU);  // MTU local: vale como robot y como control
     _roblexBleInited = true;
   }
 }
@@ -54,22 +73,32 @@ class _RoblexServerCallbacks : public BLEServerCallbacks {
   }
   void onDisconnect(BLEServer *server) {
     _roblexConnected = false;
+    // no ejecutar despues comandos que quedaron de la conexion perdida
+    _roblexRxBuffer = "";
+    if (_roblexRxQueue != nullptr) xQueueReset(_roblexRxQueue);
     server->getAdvertising()->start();  // volver a anunciarse para reconectar
   }
 };
 
 // Callback al recibir datos en la caracteristica RX: acumula hasta '\n' y
-// deja lista la ultima linea completa.
+// pone cada linea completa en la cola.
 class _RoblexRxCallbacks : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *characteristic) {
+    static _RoblexLine line;  // static: fuera de la pila de la tarea del BLE
+    if (_roblexRxQueue == nullptr) return;
     auto value = characteristic->getValue();
     for (size_t i = 0; i < value.length(); i++) {
       char c = value[i];
       if (c == '\n') {
-        _roblexRxLine = _roblexRxBuffer;
-        _roblexLineReady = true;
+        strncpy(line.text, _roblexRxBuffer.c_str(), ROBLEX_RX_LINE_LEN - 1);
+        line.text[ROBLEX_RX_LINE_LEN - 1] = '\0';
+        if (xQueueSend(_roblexRxQueue, &line, 0) != pdTRUE) {
+          static _RoblexLine oldest;  // cola llena: descartar la mas vieja
+          xQueueReceive(_roblexRxQueue, &oldest, 0);
+          xQueueSend(_roblexRxQueue, &line, 0);
+        }
         _roblexRxBuffer = "";
-      } else if (c != '\r') {
+      } else if (c != '\r' && _roblexRxBuffer.length() < ROBLEX_RX_LINE_LEN - 1) {
         _roblexRxBuffer += c;
       }
     }
@@ -78,6 +107,9 @@ class _RoblexRxCallbacks : public BLECharacteristicCallbacks {
 
 void ROBLEX::BluetoothBegin(String name) {
   _roblexEnsureInit(name.c_str());
+  if (_roblexRxQueue == nullptr) {
+    _roblexRxQueue = xQueueCreate(ROBLEX_RX_LINES, sizeof(_RoblexLine));
+  }
   BLEServer *server = BLEDevice::createServer();
   server->setCallbacks(new _RoblexServerCallbacks());
 
@@ -110,12 +142,18 @@ void ROBLEX::BluetoothBegin(String name) {
 }
 
 bool ROBLEX::BluetoothAvailable(void) {
-  return _roblexLineReady;
+  return _roblexRxQueue != nullptr && uxQueueMessagesWaiting(_roblexRxQueue) > 0;
 }
 
+// Devuelve la linea mas antigua sin leer (sin el '\n'), o "" si no hay ninguna.
+// Si solo importa el ultimo comando (p. ej. el joystick) y el loop es lento:
+//   while (ROBLEX.BluetoothAvailable()) cmd = ROBLEX.BluetoothRead();
 String ROBLEX::BluetoothRead(void) {
-  _roblexLineReady = false;
-  return _roblexRxLine;
+  _RoblexLine line;
+  if (_roblexRxQueue == nullptr || xQueueReceive(_roblexRxQueue, &line, 0) != pdTRUE) {
+    return "";
+  }
+  return String(line.text);
 }
 
 bool ROBLEX::BluetoothConnected(void) {
